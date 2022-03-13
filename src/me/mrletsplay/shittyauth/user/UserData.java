@@ -16,10 +16,10 @@ public class UserData implements JSONConvertible {
 	private SkinType skinType;
 	
 	@JSONValue
-	private int skinRevision; // To update skin cache in client after change
+	private long skinLastChanged; // To update skin cache in client after change
 	
 	@JSONValue
-	private int capeRevision; // To update cape cache in client after change
+	private long capeLastChanged; // To update cape cache in client after change
 	
 	@JSONConstructor
 	public UserData() {
@@ -42,20 +42,20 @@ public class UserData implements JSONConvertible {
 		return skinType;
 	}
 	
-	public void setSkinRevision(int skinRevision) {
-		this.skinRevision = skinRevision;
+	public void setSkinLastChanged(long skinLastChanged) {
+		this.skinLastChanged = skinLastChanged;
 	}
 	
-	public int getSkinRevision() {
-		return skinRevision;
+	public long getSkinLastChanged() {
+		return skinLastChanged;
 	}
 	
-	public void setCapeRevision(int capeRevision) {
-		this.capeRevision = capeRevision;
+	public void setCapeLastChanged(long capeLastChanged) {
+		this.capeLastChanged = capeLastChanged;
 	}
 	
-	public int getCapeRevision() {
-		return capeRevision;
+	public long getCapeLastChanged() {
+		return capeLastChanged;
 	}
-
+	
 }

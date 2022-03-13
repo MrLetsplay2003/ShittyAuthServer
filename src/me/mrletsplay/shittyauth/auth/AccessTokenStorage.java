@@ -33,6 +33,10 @@ public class AccessTokenStorage {
 		return tok.getAccountID();
 	}
 	
+	public StoredAccessToken getStoredToken(String token) {
+		return config.getGeneric(token, StoredAccessToken.class);
+	}
+	
 	public boolean checkValid(String token, String clientToken) {
 		StoredAccessToken tok = config.getGeneric(token, StoredAccessToken.class);
 		if(tok == null) return false;

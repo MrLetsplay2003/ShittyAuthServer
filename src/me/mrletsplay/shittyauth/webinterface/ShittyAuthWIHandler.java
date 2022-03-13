@@ -32,14 +32,14 @@ public class ShittyAuthWIHandler implements WebinterfaceActionHandler {
 		byte[] skinBytes = WebinterfaceFileUpload.getUploadedFileBytes(event);
 		try {
 			BufferedImage img = ImageIO.read(new ByteArrayInputStream(skinBytes));
-			if(img.getWidth() != 64 || img.getHeight() != 64) return WebinterfaceResponse.error("Skin must be 64x64 pixels");
-			BufferedImage copy = new BufferedImage(64, 64, BufferedImage.TYPE_INT_ARGB);
+			if(img.getWidth() != 64 || (img.getHeight() != 64 && img.getHeight() != 32)) return WebinterfaceResponse.error("Skin must be 64x64 64x32 pixels");
+			BufferedImage copy = new BufferedImage(64, img.getHeight(), BufferedImage.TYPE_INT_ARGB);
 			copy.createGraphics().drawImage(img, 0, 0, null);
 			File outFile = new File("shittyauth/skins/" + acc.getID().toString() + ".png");
 			IOUtils.createFile(outFile);
 			ImageIO.write(copy, "PNG", outFile);
 			UserData d = ShittyAuth.dataStorage.getUserData(acc.getID());
-			d.setSkinRevision(d.getSkinRevision() + 1);
+			d.setSkinLastChanged(System.currentTimeMillis());
 			ShittyAuth.dataStorage.updateUserData(acc.getID(), d);
 			return WebinterfaceResponse.success();
 		}catch(IOException e) {
@@ -62,7 +62,7 @@ public class ShittyAuthWIHandler implements WebinterfaceActionHandler {
 			IOUtils.createFile(outFile);
 			ImageIO.write(copy, "PNG", outFile);
 			UserData d = ShittyAuth.dataStorage.getUserData(acc.getID());
-			d.setCapeRevision(d.getCapeRevision() + 1);
+			d.setCapeLastChanged(System.currentTimeMillis());
 			ShittyAuth.dataStorage.updateUserData(acc.getID(), d);
 			return WebinterfaceResponse.success();
 		}catch(IOException e) {

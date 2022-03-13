@@ -24,7 +24,7 @@ public class TexturesHelper {
 	public static JSONObject getTexturesObject(String accID, UserData userData) {
 		JSONObject textures2 = new JSONObject();
 		JSONObject skin = new JSONObject();
-		skin.put("url", String.format(getHost() + SKIN_PATH, accID, userData.getSkinRevision()));
+		skin.put("url", String.format(getHost() + SKIN_PATH, accID, userData.getSkinLastChanged()));
 		if(userData.getSkinType() == SkinType.ALEX) {
 			JSONObject meta = new JSONObject();
 			meta.put("model", "slim");
@@ -33,7 +33,7 @@ public class TexturesHelper {
 		textures2.put("SKIN", skin);
 		if(userData.hasCape()) {
 			JSONObject cape = new JSONObject();
-			cape.put("url", String.format(getHost() + CAPE_PATH, accID, userData.getCapeRevision()));
+			cape.put("url", String.format(getHost() + CAPE_PATH, accID, userData.getCapeLastChanged()));
 			textures2.put("CAPE", cape);
 		}
 		return textures2;
