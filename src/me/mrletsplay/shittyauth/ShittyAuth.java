@@ -76,6 +76,7 @@ public class ShittyAuth {
 		Webinterface.getDocumentProvider().registerDocument("/player/attributes", new PlayerAttributesDocument());
 		Webinterface.getDocumentProvider().registerDocument(UserSkinDocument.PATH, new UserSkinDocument());
 		Webinterface.getDocumentProvider().registerDocument(UserCapeDocument.PATH, new UserCapeDocument());
+		Webinterface.getDocumentProvider().registerFileDocument("/yggdrasil_session_pubkey.der", new File("shittyauth/public_key.der"));
 		
 		Webinterface.registerActionHandler(new ShittyAuthWIHandler());
 		
