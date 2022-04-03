@@ -1,6 +1,7 @@
 package me.mrletsplay.shittyauth;
 
 import me.mrletsplay.shittyauth.page.ProfilePage;
+import me.mrletsplay.shittyauth.page.UserLegacySkinDocument;
 import me.mrletsplay.webinterfaceapi.http.document.HttpDocument;
 import me.mrletsplay.webinterfaceapi.webinterface.document.WebinterfaceDocumentProvider;
 
@@ -14,6 +15,11 @@ public class ShittyAuthDocumentProvider extends WebinterfaceDocumentProvider {
 		if(path.startsWith(ProfilePage.PATH_PREFIX)) {
 			return ProfilePage.INSTANCE;
 		}
+		
+		if(path.startsWith(UserLegacySkinDocument.PATH_PREFIX)) {
+			return UserLegacySkinDocument.INSTANCE;
+		}
+		
 		return super.getDocument(path);
 	}
 

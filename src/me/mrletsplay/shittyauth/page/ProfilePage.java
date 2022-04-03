@@ -24,6 +24,7 @@ public class ProfilePage implements HttpDocument {
 	
 	@Override
 	public void createContent() {
+		// TODO: ?unsigned=(1|0|true|false)
 		HttpRequestContext ctx = HttpRequestContext.getCurrentContext();
 		String uuid = ctx.getClientHeader().getPath().getDocumentPath().substring(PATH_PREFIX.length());
 		UUID uuidU = UUIDHelper.parseShortUUID(uuid);
@@ -47,6 +48,7 @@ public class ProfilePage implements HttpDocument {
 		textures.put("timestamp", System.currentTimeMillis());
 		textures.put("profileId", UUIDHelper.toShortUUID(UUID.fromString(acc.getID())));
 		textures.put("profileName", acc.getConnection(PasswordAuth.ID).getUserName());
+		// TODO: signatureRequired (present with true if ?unsigned=false)
 		
 		UserData d = ShittyAuth.dataStorage.getUserData(acc.getID());
 		textures.put("textures", TexturesHelper.getTexturesObject(acc.getID(), d));

@@ -73,7 +73,9 @@ public class ShittyAuth {
 		Webinterface.getDocumentProvider().registerDocument("/session/minecraft/join", new JoinPage());
 		Webinterface.getDocumentProvider().registerDocument("/authenticate", new AuthenticatePage());
 		Webinterface.getDocumentProvider().registerDocument("/validate", new ValidatePage());
-		Webinterface.getDocumentProvider().registerDocument("/player/attributes", new PlayerAttributesDocument());
+		PlayerAttributesDocument doc = new PlayerAttributesDocument();
+		Webinterface.getDocumentProvider().registerDocument("/player/attributes", doc);
+		Webinterface.getDocumentProvider().registerDocument("/privileges", doc); // for MC 1.16 or older
 		Webinterface.getDocumentProvider().registerDocument(UserSkinDocument.PATH, new UserSkinDocument());
 		Webinterface.getDocumentProvider().registerDocument(UserCapeDocument.PATH, new UserCapeDocument());
 		Webinterface.getDocumentProvider().registerFileDocument("/yggdrasil_session_pubkey.der", new File("shittyauth/public_key.der"));
