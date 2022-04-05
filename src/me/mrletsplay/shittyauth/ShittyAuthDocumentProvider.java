@@ -11,7 +11,6 @@ public class ShittyAuthDocumentProvider extends WebinterfaceDocumentProvider {
 	
 	@Override
 	public HttpDocument getDocument(String path) {
-		System.out.println("REQ: " + path);
 		if(path.startsWith(ProfilePage.PATH_PREFIX)) {
 			return ProfilePage.INSTANCE;
 		}

@@ -53,7 +53,6 @@ public class ProfilePage implements HttpDocument {
 		UserData d = ShittyAuth.dataStorage.getUserData(acc.getID());
 		textures.put("textures", TexturesHelper.getTexturesObject(acc.getID(), d));
 		b.put("value", Base64.getEncoder().encodeToString(textures.toString().getBytes(StandardCharsets.UTF_8)));
-//		b.put("value", "ewogICJ0aW1lc3RhbXAiIDogMTY0Njk0NDc4NzI5OCwKICAicHJvZmlsZUlkIiA6ICIzZDFmYzUyODAyMWQ0YTUxYTU0NWVjMTlhZDU5NzgyZiIsCiAgInByb2ZpbGVOYW1lIiA6ICJQYXVsMTgyMDAyXyIsCiAgInRleHR1cmVzIiA6IHsKICAgICJTS0lOIiA6IHsKICAgICAgInVybCIgOiAiaHR0cDovL3RleHR1cmVzLm1pbmVjcmFmdC5uZXQvdGV4dHVyZS9mNmUwZjA4OTFjNzBmYjBkMjI5N2NiMTg4OTJkMDNmNjhmOWVjNTU0ZDdlN2FjMGRhOGE2NTFlNTE1NDZlNzVmIgogICAgfSwKICAgICJDQVBFIiA6IHsKICAgICAgInVybCIgOiAiaHR0cDovL3RleHR1cmVzLm1pbmVjcmFmdC5uZXQvdGV4dHVyZS85ZTUwN2FmYzU2MzU5OTc4YTNlYjNlMzIzNjcwNDJiODUzY2RkZDA5OTVkMTdkMGRhOTk1NjYyOTEzZmIwMGY3IgogICAgfQogIH0KfQ==");
 		a.add(b);
 		obj.put("properties", a);
 		System.out.println(obj);

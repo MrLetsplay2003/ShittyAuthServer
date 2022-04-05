@@ -16,13 +16,11 @@ public class UserDataStorage {
 	}
 	
 	public void updateUserData(String accID, UserData userData) {
-		System.out.println("SET " + accID);
 		config.set(accID, userData);
 		config.saveToFile();
 	}
 	
 	public UserData getUserData(String accID) {
-		System.out.println("GET " + accID);
 		return config.getGeneric(accID, UserData.class, new UserData(), false);
 	}
 	

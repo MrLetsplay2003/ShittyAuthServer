@@ -56,10 +56,6 @@ public class HasJoinedPage implements HttpDocument {
 		UserData d = ShittyAuth.dataStorage.getUserData(acc.getID());
 		textures.put("textures", TexturesHelper.getTexturesObject(acc.getID(), d));
 		
-//		JSONObject json = new JSONObject("{\"timestamp\":1646944787298,\"profileId\":\"3d1fc528021d4a51a545ec19ad59782f\",\"profileName\":\"Paul182002_\",\"textures\":{\"SKIN\":{\"url\":\"http://textures.minecraft.net/texture/f6e0f0891c70fb0d2297cb18892d03f68f9ec554d7e7ac0da8a651e51546e75f\"},\"CAPE\":{\"url\":\"http://textures.minecraft.net/texture/9e507afc56359978a3eb3e32367042b853cddd0995d17d0da995662913fb00f7\"}}}");
-		
-		System.out.println(textures.toFancyString());
-		
 		String b64Value = Base64.getEncoder().encodeToString(textures.toString().getBytes());
 		b.put("value", b64Value);
 		
@@ -73,7 +69,6 @@ public class HasJoinedPage implements HttpDocument {
 		}
 		a.add(b);
 		obj.put("properties", a);
-		System.out.println(obj);
 		
 		ctx.getServerHeader().setContent("application/json", obj.toString().getBytes(StandardCharsets.UTF_8));
 	}

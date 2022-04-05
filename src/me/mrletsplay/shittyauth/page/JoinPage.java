@@ -18,17 +18,14 @@ public class JoinPage implements HttpDocument {
 		
 		JSONObject authData = (JSONObject) ctx.getClientHeader().getPostData().getParsedAs(HttpClientContentTypes.JSON);
 		String accessToken = authData.getString("accessToken");
-		System.out.println(accessToken);
 		
 		String accID = ShittyAuth.tokenStorage.getAccountID(accessToken);
-		System.out.println(accID);
 		String shortUUID = accID == null ? "" : UUIDHelper.toShortUUID(UUID.fromString(accID));
 		if(accID == null || !shortUUID.equals(authData.getString("selectedProfile"))) {
 			ctx.getServerHeader().setStatusCode(HttpStatusCodes.UNAUTHORIZED_401);
 			return;
 		}
 		
-		System.out.println(authData);
 		ShittyAuth.userServers.put(shortUUID, authData.getString("serverId"));
 		ctx.getServerHeader().setStatusCode(HttpStatusCodes.NO_CONTENT_204);
 		ctx.getServerHeader().setContent(new byte[0]);

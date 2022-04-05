@@ -11,8 +11,7 @@ public class PlayerAttributesDocument implements HttpDocument {
 	@Override
 	public void createContent() {
 		HttpRequestContext ctx = HttpRequestContext.getCurrentContext();
-		String auth = ctx.getClientHeader().getFields().getFieldValue("Authorization");
-		System.out.println(auth);
+//		String auth = ctx.getClientHeader().getFields().getFieldValue("Authorization"); TODO: ignored for now
 		
 		JSONObject obj = new JSONObject();
 		JSONObject privileges = new JSONObject();
@@ -29,7 +28,6 @@ public class PlayerAttributesDocument implements HttpDocument {
 		JSONObject prof = new JSONObject();
 		prof.put("profanityFilterOn", false);
 		obj.put("profanityFilterPreferences", prof);
-		System.out.println(obj.toFancyString());
 		ctx.getServerHeader().setContent("application/json", obj.toString().getBytes(StandardCharsets.UTF_8));
 	}
 

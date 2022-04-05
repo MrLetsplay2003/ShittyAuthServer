@@ -28,7 +28,6 @@ public class AuthenticatePage implements HttpDocument {
 			username = obj.getString("username"),
 			password = obj.getString("password"),
 			clientToken = obj.optString("clientToken").orElse(null);
-		System.out.println(obj);
 		
 		// Ignore clientToken, requestUser
 		

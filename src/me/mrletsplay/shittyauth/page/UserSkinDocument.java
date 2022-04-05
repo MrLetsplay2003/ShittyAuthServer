@@ -29,8 +29,6 @@ public class UserSkinDocument implements HttpDocument {
 		File f = new File("shittyauth/skins/", accID + ".png");
 		if(!f.exists()) f = new File("shittyauth/default_skin.png");
 		
-		System.out.println(f.getAbsoluteFile());
-		
 		try {
 			byte[] bytes = Files.readAllBytes(f.toPath());
 			ctx.getServerHeader().setContent(bytes);
