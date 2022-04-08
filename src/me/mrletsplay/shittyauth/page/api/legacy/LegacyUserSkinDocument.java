@@ -1,4 +1,4 @@
-package me.mrletsplay.shittyauth.page;
+package me.mrletsplay.shittyauth.page.api.legacy;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,16 +12,16 @@ import me.mrletsplay.webinterfaceapi.webinterface.Webinterface;
 import me.mrletsplay.webinterfaceapi.webinterface.auth.WebinterfaceAccount;
 import me.mrletsplay.webinterfaceapi.webinterface.auth.impl.PasswordAuth;
 
-public class UserLegacySkinDocument implements HttpDocument {
+public class LegacyUserSkinDocument implements HttpDocument {
 
 	public static final String PATH_PREFIX = "/MinecraftSkins/";
-	public static final UserLegacySkinDocument INSTANCE = new UserLegacySkinDocument();
+	public static final LegacyUserSkinDocument INSTANCE = new LegacyUserSkinDocument();
 
 	@Override
 	public void createContent() {
 		HttpRequestContext ctx = HttpRequestContext.getCurrentContext();
 		String username = ctx.getClientHeader().getPath().getDocumentPath().substring(PATH_PREFIX.length());
-		username = username.substring(0, username.length() - ".png".length());
+		if(username.endsWith(".png")) username = username.substring(0, username.length() - ".png".length());
 		WebinterfaceAccount acc = Webinterface.getAccountStorage().getAccountByConnectionSpecificID(PasswordAuth.ID, username);
 		if(acc == null) {
 			ctx.getServerHeader().setStatusCode(HttpStatusCodes.NOT_FOUND_404);

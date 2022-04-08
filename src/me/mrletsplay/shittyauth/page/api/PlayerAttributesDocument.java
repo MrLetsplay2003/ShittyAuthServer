@@ -1,4 +1,4 @@
-package me.mrletsplay.shittyauth.page;
+package me.mrletsplay.shittyauth.page.api;
 
 import java.nio.charset.StandardCharsets;
 

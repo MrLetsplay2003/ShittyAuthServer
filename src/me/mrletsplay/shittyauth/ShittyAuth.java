@@ -17,14 +17,16 @@ import java.util.Map;
 
 import me.mrletsplay.shittyauth.auth.AccessTokenStorage;
 import me.mrletsplay.shittyauth.config.ShittyAuthSettings;
-import me.mrletsplay.shittyauth.page.AuthenticatePage;
-import me.mrletsplay.shittyauth.page.HasJoinedPage;
-import me.mrletsplay.shittyauth.page.JoinPage;
-import me.mrletsplay.shittyauth.page.PlayerAttributesDocument;
 import me.mrletsplay.shittyauth.page.SettingsPage;
-import me.mrletsplay.shittyauth.page.UserCapeDocument;
-import me.mrletsplay.shittyauth.page.UserSkinDocument;
-import me.mrletsplay.shittyauth.page.ValidatePage;
+import me.mrletsplay.shittyauth.page.api.PlayerAttributesDocument;
+import me.mrletsplay.shittyauth.page.api.UserCapeDocument;
+import me.mrletsplay.shittyauth.page.api.UserSkinDocument;
+import me.mrletsplay.shittyauth.page.api.legacy.LegacyCheckServerDocument;
+import me.mrletsplay.shittyauth.page.api.legacy.LegacyJoinServerDocument;
+import me.mrletsplay.shittyauth.page.api.yggdrasil.AuthenticatePage;
+import me.mrletsplay.shittyauth.page.api.yggdrasil.HasJoinedPage;
+import me.mrletsplay.shittyauth.page.api.yggdrasil.JoinPage;
+import me.mrletsplay.shittyauth.page.api.yggdrasil.ValidatePage;
 import me.mrletsplay.shittyauth.user.UserDataStorage;
 import me.mrletsplay.shittyauth.webinterface.MCAccountPage;
 import me.mrletsplay.shittyauth.webinterface.ShittyAuthWIHandler;
@@ -79,6 +81,9 @@ public class ShittyAuth {
 		Webinterface.getDocumentProvider().registerDocument(UserSkinDocument.PATH, new UserSkinDocument());
 		Webinterface.getDocumentProvider().registerDocument(UserCapeDocument.PATH, new UserCapeDocument());
 		Webinterface.getDocumentProvider().registerFileDocument("/yggdrasil_session_pubkey.der", new File("shittyauth/public_key.der"));
+		
+		Webinterface.getDocumentProvider().registerDocument("/game/joinserver.jsp", new LegacyJoinServerDocument());
+		Webinterface.getDocumentProvider().registerDocument("/game/checkserver.jsp", new LegacyCheckServerDocument());
 		
 		Webinterface.registerActionHandler(new ShittyAuthWIHandler());
 		

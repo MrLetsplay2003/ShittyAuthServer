@@ -1,4 +1,4 @@
-package me.mrletsplay.shittyauth.page;
+package me.mrletsplay.shittyauth.page.api;
 
 import java.io.File;
 import java.io.IOException;

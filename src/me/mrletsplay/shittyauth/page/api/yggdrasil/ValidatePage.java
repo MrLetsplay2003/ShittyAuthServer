@@ -1,4 +1,4 @@
-package me.mrletsplay.shittyauth.page;
+package me.mrletsplay.shittyauth.page.api.yggdrasil;
 
 import me.mrletsplay.mrcore.json.JSONObject;
 import me.mrletsplay.shittyauth.ShittyAuth;
