@@ -15,7 +15,7 @@ $ mvn package
 which will generate a `ShittyAuthServer-VERSION.jar` in the `target` folder
 
 # Running the server
-First, compile the server or download a prebuilt JAR file *(not yet available)*, then, run it using any Java 11+ VM.
+First, compile the server or download a prebuilt JAR file from [here](https://ci.graphite-official.com/job/ShittyAuthServer/), then, run it using any Java 11+ VM.
 
 Afterwards, navigate to `http://your.server.ip:8880` in your web browser. You will be prompted to set up the WebinterfaceAPI server the authentication server uses.
 
