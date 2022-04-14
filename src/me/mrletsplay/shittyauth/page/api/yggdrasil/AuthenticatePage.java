@@ -69,7 +69,6 @@ public class AuthenticatePage implements HttpDocument {
 		response.put("accessToken", tok.getAccessToken());
 		response.put("clientToken", tok.getClientToken());
 		
-		System.out.println(response);
 		ctx.getServerHeader().setContent("application/json", response.toString().getBytes(StandardCharsets.UTF_8));
 	}
 

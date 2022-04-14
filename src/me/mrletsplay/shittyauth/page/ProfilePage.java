@@ -28,7 +28,6 @@ public class ProfilePage implements HttpDocument {
 		HttpRequestContext ctx = HttpRequestContext.getCurrentContext();
 		String uuid = ctx.getClientHeader().getPath().getDocumentPath().substring(PATH_PREFIX.length());
 		UUID uuidU = UUIDHelper.parseShortUUID(uuid);
-		System.out.println(uuidU);
 		
 		WebinterfaceAccount acc = Webinterface.getAccountStorage().getAccountByID(uuidU.toString());
 		if(acc == null || acc.getConnection(PasswordAuth.ID) == null) {
@@ -55,7 +54,6 @@ public class ProfilePage implements HttpDocument {
 		b.put("value", Base64.getEncoder().encodeToString(textures.toString().getBytes(StandardCharsets.UTF_8)));
 		a.add(b);
 		obj.put("properties", a);
-		System.out.println(obj);
 		
 		ctx.getServerHeader().setContent("application/json", obj.toString().getBytes(StandardCharsets.UTF_8));
 	}
