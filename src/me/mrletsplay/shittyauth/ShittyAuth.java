@@ -19,8 +19,6 @@ import me.mrletsplay.shittyauth.auth.AccessTokenStorage;
 import me.mrletsplay.shittyauth.config.ShittyAuthSettings;
 import me.mrletsplay.shittyauth.page.SettingsPage;
 import me.mrletsplay.shittyauth.page.api.PlayerAttributesDocument;
-import me.mrletsplay.shittyauth.page.api.UserCapeDocument;
-import me.mrletsplay.shittyauth.page.api.UserSkinDocument;
 import me.mrletsplay.shittyauth.page.api.legacy.LegacyCheckServerDocument;
 import me.mrletsplay.shittyauth.page.api.legacy.LegacyJoinServerDocument;
 import me.mrletsplay.shittyauth.page.api.yggdrasil.AuthenticatePage;
@@ -78,8 +76,6 @@ public class ShittyAuth {
 		PlayerAttributesDocument doc = new PlayerAttributesDocument();
 		Webinterface.getDocumentProvider().registerDocument("/player/attributes", doc);
 		Webinterface.getDocumentProvider().registerDocument("/privileges", doc); // for MC 1.16 or older
-		Webinterface.getDocumentProvider().registerDocument(UserSkinDocument.PATH, new UserSkinDocument());
-		Webinterface.getDocumentProvider().registerDocument(UserCapeDocument.PATH, new UserCapeDocument());
 		Webinterface.getDocumentProvider().registerFileDocument("/yggdrasil_session_pubkey.der", new File("shittyauth/public_key.der"));
 		
 		Webinterface.getDocumentProvider().registerDocument("/game/joinserver.jsp", new LegacyJoinServerDocument());

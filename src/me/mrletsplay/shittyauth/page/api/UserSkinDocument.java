@@ -13,12 +13,15 @@ import me.mrletsplay.webinterfaceapi.webinterface.auth.WebinterfaceAccount;
 
 public class UserSkinDocument implements HttpDocument {
 	
-	public static final String PATH = "/skin";
+	public static final UserSkinDocument INSTANCE = new UserSkinDocument();
 
+	public static final String PATH_PREFIX = "/skin/s";
+	
 	@Override
 	public void createContent() {
 		HttpRequestContext ctx = HttpRequestContext.getCurrentContext();
-		String accID = ctx.getClientHeader().getPath().getQueryParameterValue("id");
+		String accID = ctx.getClientHeader().getPath().getDocumentPath().substring(PATH_PREFIX.length());
+		if(accID.contains("_")) accID = accID.substring(0, accID.indexOf("_"));
 		WebinterfaceAccount acc = Webinterface.getAccountStorage().getAccountByID(accID);
 		if(acc == null) {
 			ctx.getServerHeader().setStatusCode(HttpStatusCodes.NOT_FOUND_404);

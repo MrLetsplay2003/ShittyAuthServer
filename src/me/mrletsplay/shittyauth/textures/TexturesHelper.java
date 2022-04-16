@@ -13,8 +13,8 @@ public class TexturesHelper {
 	
 	public static final String
 		FALLBACK_HOST = "http://" + Webinterface.getConfig().getSetting(DefaultSettings.HTTP_HOST) + ":" + Webinterface.getConfig().getSetting(DefaultSettings.HTTP_PORT),
-		SKIN_PATH = UserSkinDocument.PATH + "?id=%s&rev=%s",
-		CAPE_PATH = UserCapeDocument.PATH + "?id=%s&rev=%s";
+		SKIN_PATH = UserSkinDocument.PATH_PREFIX + "%s_%s",
+		CAPE_PATH = UserCapeDocument.PATH_PREFIX + "%s_%s";
 	
 	private static String getHost() {
 		String configHost = ShittyAuth.config.getSetting(ShittyAuthSettings.SKIN_BASE_URL);

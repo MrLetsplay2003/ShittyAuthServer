@@ -13,12 +13,15 @@ import me.mrletsplay.webinterfaceapi.webinterface.auth.WebinterfaceAccount;
 
 public class UserCapeDocument implements HttpDocument {
 	
-	public static final String PATH = "/cape";
+	public static final UserCapeDocument INSTANCE = new UserCapeDocument();
 
+	public static final String PATH_PREFIX = "/cape/c";
+	
 	@Override
 	public void createContent() {
 		HttpRequestContext ctx = HttpRequestContext.getCurrentContext();
-		String accID = ctx.getClientHeader().getPath().getQueryParameterValue("id");
+		String accID = ctx.getClientHeader().getPath().getDocumentPath().substring(PATH_PREFIX.length());
+		if(accID.contains("_")) accID = accID.substring(0, accID.indexOf("_"));
 		WebinterfaceAccount acc = Webinterface.getAccountStorage().getAccountByID(accID);
 		if(acc == null) {
 			ctx.getServerHeader().setStatusCode(HttpStatusCodes.NOT_FOUND_404);
