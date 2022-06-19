@@ -2,25 +2,25 @@ package me.mrletsplay.shittyauth.page;
 
 import me.mrletsplay.shittyauth.ShittyAuth;
 import me.mrletsplay.shittyauth.config.ShittyAuthSettings;
-import me.mrletsplay.webinterfaceapi.webinterface.DefaultPermissions;
-import me.mrletsplay.webinterfaceapi.webinterface.page.WebinterfacePage;
-import me.mrletsplay.webinterfaceapi.webinterface.page.WebinterfacePageSection;
-import me.mrletsplay.webinterfaceapi.webinterface.page.element.WebinterfaceSettingsPane;
+import me.mrletsplay.webinterfaceapi.DefaultPermissions;
+import me.mrletsplay.webinterfaceapi.page.Page;
+import me.mrletsplay.webinterfaceapi.page.PageSection;
+import me.mrletsplay.webinterfaceapi.page.element.SettingsPane;
 
-public class SettingsPage extends WebinterfacePage {
-	
+public class SettingsPage extends Page {
+
 	public static final String URL = "/mc/settings";
 
 	public SettingsPage() {
 		super("Settings", URL, DefaultPermissions.SETTINGS);
 		setIcon("mdi:cog");
-		
-		WebinterfacePageSection sc2 = new WebinterfacePageSection();
+
+		PageSection sc2 = new PageSection();
 		sc2.setSlimLayout(true);
 		sc2.addTitle("Settings");
-		sc2.addElement(new WebinterfaceSettingsPane(() -> ShittyAuth.config, ShittyAuthSettings.INSTANCE.getSettingsCategories(), "shittyauth", "setSetting"));
-		
+		sc2.addElement(new SettingsPane(() -> ShittyAuth.config, ShittyAuthSettings.INSTANCE.getSettingsCategories(), "shittyauth", "setSetting"));
+
 		addSection(sc2);
 	}
-	
+
 }

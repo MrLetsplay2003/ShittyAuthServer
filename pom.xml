@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>me.mrletsplay</groupId>
 	<artifactId>ShittyAuthServer</artifactId>
-	<version>1.3</version>
+	<version>1.4</version>
 	<build>
 		<sourceDirectory>src</sourceDirectory>
 		<plugins>
@@ -52,24 +52,52 @@
 					</filters>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>me.mrletsplay</groupId>
+				<artifactId>resource-index-maven-plugin</artifactId>
+				<version>1.1</version>
+				<executions>
+					<execution>
+						<phase>compile</phase>
+						<goals>
+							<goal>generate-index</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<targetPath>shittyauth-resources.list</targetPath>
+				</configuration>
+			</plugin>
 		</plugins>
+		<resources>
+			<resource>
+				<directory>${project.basedir}/resources</directory>
+				<targetPath>include</targetPath>
+			</resource>
+		</resources>
 	</build>
+	<pluginRepositories>
+		<pluginRepository>
+			<id>graphite-official</id>
+			<url>https://maven.graphite-official.com</url>
+		</pluginRepository>
+	</pluginRepositories>
 	<repositories>
 		<repository>
 			<id>graphite-official</id>
-			<url>http://graphite-official.com/repo</url>
+			<url>https://maven.graphite-official.com</url>
 		</repository>
 	</repositories>
 	<dependencies>
 		<dependency>
 			<groupId>me.mrletsplay</groupId>
 			<artifactId>WebinterfaceAPI</artifactId>
-			<version>2.18.1</version>
+			<version>3.0</version>
 		</dependency>
 		<dependency>
 			<groupId>me.mrletsplay</groupId>
 			<artifactId>MrCore</artifactId>
-			<version>3.4.3</version>
+			<version>4.1</version>
 		</dependency>
 	</dependencies>
 </project>

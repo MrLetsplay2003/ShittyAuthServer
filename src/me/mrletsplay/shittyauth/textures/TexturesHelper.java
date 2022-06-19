@@ -3,24 +3,22 @@ package me.mrletsplay.shittyauth.textures;
 import me.mrletsplay.mrcore.json.JSONObject;
 import me.mrletsplay.shittyauth.ShittyAuth;
 import me.mrletsplay.shittyauth.config.ShittyAuthSettings;
-import me.mrletsplay.shittyauth.page.api.UserCapeDocument;
-import me.mrletsplay.shittyauth.page.api.UserSkinDocument;
 import me.mrletsplay.shittyauth.user.UserData;
-import me.mrletsplay.webinterfaceapi.webinterface.Webinterface;
-import me.mrletsplay.webinterfaceapi.webinterface.config.DefaultSettings;
+import me.mrletsplay.webinterfaceapi.Webinterface;
+import me.mrletsplay.webinterfaceapi.config.DefaultSettings;
 
 public class TexturesHelper {
-	
+
 	public static final String
 		FALLBACK_HOST = "http://" + Webinterface.getConfig().getSetting(DefaultSettings.HTTP_HOST) + ":" + Webinterface.getConfig().getSetting(DefaultSettings.HTTP_PORT),
-		SKIN_PATH = UserSkinDocument.PATH_PREFIX + "%s_%s",
-		CAPE_PATH = UserCapeDocument.PATH_PREFIX + "%s_%s";
-	
+		SKIN_PATH = "/skin/%s_%s",
+		CAPE_PATH = "/cape/%s_%s";
+
 	private static String getHost() {
 		String configHost = ShittyAuth.config.getSetting(ShittyAuthSettings.SKIN_BASE_URL);
 		return configHost != null ? configHost : FALLBACK_HOST;
 	}
-	
+
 	public static JSONObject getTexturesObject(String accID, UserData userData) {
 		JSONObject textures2 = new JSONObject();
 		JSONObject skin = new JSONObject();
@@ -38,5 +36,5 @@ public class TexturesHelper {
 		}
 		return textures2;
 	}
-	
+
 }

@@ -2,3 +2,8 @@
 /target/
 dependency-reduced-pom.xml
 /run/
+/cfg/
+/data/
+/include/
+/logs/
+/shittyauth/
