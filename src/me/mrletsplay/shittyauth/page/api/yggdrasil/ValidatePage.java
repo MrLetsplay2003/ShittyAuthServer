@@ -19,7 +19,7 @@ public class ValidatePage implements HttpDocument {
 			clientToken = obj.optString("clientToken").orElse(null);
 
 		StoredAccessToken tok = ShittyAuth.tokenStorage.getStoredToken(accessToken);
-		if(tok == null || (clientToken != null && clientToken.equals(tok.getClientToken()))) {
+		if(tok == null || (clientToken != null && !clientToken.equals(tok.getClientToken()))) {
 			ctx.getServerHeader().setStatusCode(HttpStatusCodes.ACCESS_DENIED_403);
 			JSONObject err = new JSONObject();
 			err.put("error", "ForbiddenOperationException");

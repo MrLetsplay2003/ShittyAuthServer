@@ -13,6 +13,7 @@
 				<version>3.8.1</version>
 				<configuration>
 					<release>11</release>
+					<encoding>UTF-8</encoding>
 				</configuration>
 			</plugin>
 			<plugin>

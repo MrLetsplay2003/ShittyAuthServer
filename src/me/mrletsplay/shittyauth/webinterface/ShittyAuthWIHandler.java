@@ -32,7 +32,7 @@ public class ShittyAuthWIHandler implements ActionHandler {
 		byte[] skinBytes = FileUpload.getUploadedFileBytes(event);
 		try {
 			BufferedImage img = ImageIO.read(new ByteArrayInputStream(skinBytes));
-			if(img.getWidth() != 64 || (img.getHeight() != 64 && img.getHeight() != 32)) return ActionResponse.error("Skin must be 64x64 64x32 pixels");
+			if(img.getWidth() != 64 || (img.getHeight() != 64 && img.getHeight() != 32)) return ActionResponse.error("Skin must be 64x64 or 64x32 pixels");
 			BufferedImage copy = new BufferedImage(64, img.getHeight(), BufferedImage.TYPE_INT_ARGB);
 			copy.createGraphics().drawImage(img, 0, 0, null);
 			File outFile = new File("shittyauth/skins/" + acc.getID().toString() + ".png");
