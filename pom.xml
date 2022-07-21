@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>me.mrletsplay</groupId>
 	<artifactId>ShittyAuthServer</artifactId>
-	<version>1.4</version>
+	<version>1.4.1</version>
 	<build>
 		<sourceDirectory>src</sourceDirectory>
 		<plugins>
@@ -93,7 +93,7 @@
 		<dependency>
 			<groupId>me.mrletsplay</groupId>
 			<artifactId>WebinterfaceAPI</artifactId>
-			<version>3.0</version>
+			<version>3.0.1</version>
 		</dependency>
 		<dependency>
 			<groupId>me.mrletsplay</groupId>
