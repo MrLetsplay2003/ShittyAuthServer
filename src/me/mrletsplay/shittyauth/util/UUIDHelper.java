@@ -1,4 +1,4 @@
-package me.mrletsplay.shittyauth;
+package me.mrletsplay.shittyauth.util;
 
 import java.nio.ByteBuffer;
 import java.util.UUID;
@@ -23,7 +23,6 @@ public class UUIDHelper {
 		ByteBuffer bb = ByteBuffer.wrap(new byte[16]);
 		bb.putLong(uuid.getMostSignificantBits());
 		bb.putLong(uuid.getLeastSignificantBits());
-
 		return bb.array();
 	}
 

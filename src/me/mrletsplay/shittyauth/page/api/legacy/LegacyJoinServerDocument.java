@@ -1,17 +1,14 @@
 package me.mrletsplay.shittyauth.page.api.legacy;
 
 import java.nio.charset.StandardCharsets;
-import java.util.UUID;
 
 import me.mrletsplay.shittyauth.ShittyAuth;
-import me.mrletsplay.shittyauth.UUIDHelper;
 import me.mrletsplay.simplehttpserver.http.HttpStatusCodes;
 import me.mrletsplay.simplehttpserver.http.document.HttpDocument;
 import me.mrletsplay.simplehttpserver.http.request.HttpRequestContext;
 import me.mrletsplay.simplehttpserver.http.request.urlencoded.URLEncoded;
-import me.mrletsplay.webinterfaceapi.Webinterface;
 import me.mrletsplay.webinterfaceapi.auth.Account;
-import me.mrletsplay.webinterfaceapi.auth.impl.PasswordAuth;
+import me.mrletsplay.webinterfaceapi.auth.AccountConnection;
 
 public class LegacyJoinServerDocument implements HttpDocument {
 
@@ -31,13 +28,20 @@ public class LegacyJoinServerDocument implements HttpDocument {
 		String serverId = query.getFirst("serverId");
 
 		String accID = ShittyAuth.tokenStorage.getAccountID(accessToken);
-		Account acc = Webinterface.getAccountStorage().getAccountByConnectionSpecificID(PasswordAuth.ID, accName);
-		if(accID == null || !acc.getID().equals(accID)) {
+
+		if(accID == null) {
 			ctx.getServerHeader().setStatusCode(HttpStatusCodes.UNAUTHORIZED_401);
 			return;
 		}
 
-		ShittyAuth.userServers.put(UUIDHelper.toShortUUID(UUID.fromString(acc.getID())), serverId);
+		Account acc = ShittyAuth.getAccountByUsername(accName);
+		AccountConnection con = acc.getConnection(ShittyAuth.ACCOUNT_CONNECTION_NAME);
+		if(!con.getUserID().equals(accID)) {
+			ctx.getServerHeader().setStatusCode(HttpStatusCodes.UNAUTHORIZED_401);
+			return;
+		}
+
+		ShittyAuth.userServers.put(con.getUserID(), serverId);
 		ctx.getServerHeader().setStatusCode(HttpStatusCodes.OK_200);
 		ctx.getServerHeader().setContent("text/plain", "ok".getBytes(StandardCharsets.UTF_8));
 	}

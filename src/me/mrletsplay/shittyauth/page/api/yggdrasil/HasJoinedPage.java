@@ -8,15 +8,14 @@ import java.util.UUID;
 import me.mrletsplay.mrcore.json.JSONArray;
 import me.mrletsplay.mrcore.json.JSONObject;
 import me.mrletsplay.shittyauth.ShittyAuth;
-import me.mrletsplay.shittyauth.UUIDHelper;
 import me.mrletsplay.shittyauth.textures.TexturesHelper;
 import me.mrletsplay.shittyauth.user.UserData;
+import me.mrletsplay.shittyauth.util.UUIDHelper;
 import me.mrletsplay.simplehttpserver.http.HttpStatusCodes;
 import me.mrletsplay.simplehttpserver.http.document.HttpDocument;
 import me.mrletsplay.simplehttpserver.http.request.HttpRequestContext;
-import me.mrletsplay.webinterfaceapi.Webinterface;
 import me.mrletsplay.webinterfaceapi.auth.Account;
-import me.mrletsplay.webinterfaceapi.auth.impl.PasswordAuth;
+import me.mrletsplay.webinterfaceapi.auth.AccountConnection;
 
 public class HasJoinedPage implements HttpDocument {
 
@@ -24,25 +23,32 @@ public class HasJoinedPage implements HttpDocument {
 	public void createContent() {
 		HttpRequestContext ctx = HttpRequestContext.getCurrentContext();
 
-		Account acc = Webinterface.getAccountStorage().getAccountByConnectionSpecificID(PasswordAuth.ID, ctx.getClientHeader().getPath().getQuery().getFirst("username"));
-		if(acc == null || acc.getConnection(PasswordAuth.ID) == null) {
+		String username = ctx.getClientHeader().getPath().getQuery().getFirst("username");
+		if(username == null) {
 			ctx.getServerHeader().setStatusCode(HttpStatusCodes.NOT_FOUND_404);
 			return;
 		}
 
-		String playerID = UUIDHelper.toShortUUID(UUID.fromString(acc.getID()));
-		String serverHash = ShittyAuth.userServers.get(playerID);
+		Account acc = ShittyAuth.getAccountByUsername(username);
+		if(acc == null) {
+			ctx.getServerHeader().setStatusCode(HttpStatusCodes.NOT_FOUND_404);
+			return;
+		}
+
+		AccountConnection con = acc.getConnection(ShittyAuth.ACCOUNT_CONNECTION_NAME);
+
+		String serverHash = ShittyAuth.userServers.get(con.getUserID());
 		String hash = ctx.getClientHeader().getPath().getQuery().getFirst("serverId");
 		if(hash == null || serverHash == null || !serverHash.equals(hash)) {
 			ctx.getServerHeader().setStatusCode(HttpStatusCodes.NO_CONTENT_204);
 			return;
 		}
 
-		ShittyAuth.userServers.remove(playerID);
+		ShittyAuth.userServers.remove(con.getUserID());
 
 		JSONObject obj = new JSONObject();
-		obj.put("id", UUIDHelper.toShortUUID(UUID.fromString(acc.getID())));
-		obj.put("name", acc.getConnection(PasswordAuth.ID).getUserName());
+		obj.put("id", UUIDHelper.toShortUUID(UUID.fromString(con.getUserID())));
+		obj.put("name", con.getUserName());
 
 		JSONArray a = new JSONArray();
 		JSONObject b = new JSONObject();
@@ -50,11 +56,11 @@ public class HasJoinedPage implements HttpDocument {
 
 		JSONObject textures = new JSONObject();
 		textures.put("timestamp", System.currentTimeMillis());
-		textures.put("profileId", UUIDHelper.toShortUUID(UUID.fromString(acc.getID())));
-		textures.put("profileName", acc.getConnection(PasswordAuth.ID).getUserName());
+		textures.put("profileId", UUIDHelper.toShortUUID(UUID.fromString(con.getUserID())));
+		textures.put("profileName", con.getUserName());
 
-		UserData d = ShittyAuth.dataStorage.getUserData(acc.getID());
-		textures.put("textures", TexturesHelper.getTexturesObject(acc.getID(), d));
+		UserData d = ShittyAuth.dataStorage.getUserData(con.getUserID());
+		textures.put("textures", TexturesHelper.getTexturesObject(con.getUserID(), d));
 
 		String b64Value = Base64.getEncoder().encodeToString(textures.toString().getBytes());
 		b.put("value", b64Value);

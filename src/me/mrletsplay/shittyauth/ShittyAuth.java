@@ -16,28 +16,41 @@ import java.util.HashMap;
 import java.util.Map;
 
 import me.mrletsplay.shittyauth.auth.AccessTokenStorage;
+import me.mrletsplay.shittyauth.auth.FileAccessTokenStorage;
+import me.mrletsplay.shittyauth.auth.SQLAccessTokenStorage;
 import me.mrletsplay.shittyauth.config.ShittyAuthSettings;
-import me.mrletsplay.shittyauth.page.ProfilePage;
+import me.mrletsplay.shittyauth.page.AccountPage;
+import me.mrletsplay.shittyauth.page.CreateAccountPage;
 import me.mrletsplay.shittyauth.page.SettingsPage;
-import me.mrletsplay.shittyauth.page.api.PlayerAttributesDocument;
 import me.mrletsplay.shittyauth.page.api.UserCapeDocument;
 import me.mrletsplay.shittyauth.page.api.UserSkinDocument;
 import me.mrletsplay.shittyauth.page.api.legacy.LegacyCheckServerDocument;
 import me.mrletsplay.shittyauth.page.api.legacy.LegacyJoinServerDocument;
 import me.mrletsplay.shittyauth.page.api.legacy.LegacyUserCapeDocument;
 import me.mrletsplay.shittyauth.page.api.legacy.LegacyUserSkinDocument;
+import me.mrletsplay.shittyauth.page.api.services.PlayerAttributesDocument;
+import me.mrletsplay.shittyauth.page.api.services.PlayerCertificatesDocument;
+import me.mrletsplay.shittyauth.page.api.services.PlayerReportDocument;
 import me.mrletsplay.shittyauth.page.api.yggdrasil.AuthenticatePage;
 import me.mrletsplay.shittyauth.page.api.yggdrasil.HasJoinedPage;
 import me.mrletsplay.shittyauth.page.api.yggdrasil.JoinPage;
+import me.mrletsplay.shittyauth.page.api.yggdrasil.ProfilePage;
 import me.mrletsplay.shittyauth.page.api.yggdrasil.ValidatePage;
+import me.mrletsplay.shittyauth.user.FileUserDataStorage;
+import me.mrletsplay.shittyauth.user.SQLUserDataStorage;
 import me.mrletsplay.shittyauth.user.UserDataStorage;
-import me.mrletsplay.shittyauth.webinterface.MCAccountPage;
 import me.mrletsplay.shittyauth.webinterface.ShittyAuthWIHandler;
 import me.mrletsplay.webinterfaceapi.Webinterface;
+import me.mrletsplay.webinterfaceapi.auth.Account;
+import me.mrletsplay.webinterfaceapi.auth.AccountConnection;
+import me.mrletsplay.webinterfaceapi.config.DefaultSettings;
 import me.mrletsplay.webinterfaceapi.config.FileConfig;
 import me.mrletsplay.webinterfaceapi.page.PageCategory;
+import me.mrletsplay.webinterfaceapi.sql.SQLHelper;
 
 public class ShittyAuth {
+
+	public static final String ACCOUNT_CONNECTION_NAME = "shittyauth";
 
 	public static PrivateKey privateKey;
 	public static AccessTokenStorage tokenStorage;
@@ -46,11 +59,21 @@ public class ShittyAuth {
 	public static Map<String, String> userServers = new HashMap<>();
 
 	public static void main(String[] args) throws NoSuchAlgorithmException, IOException, InvalidKeySpecException {
+		DefaultSettings.HOME_PAGE_PATH.defaultValue(AccountPage.PATH);
 		Webinterface.start();
 		Webinterface.extractResources("/shittyauth-resources.list");
 
-		tokenStorage = new AccessTokenStorage();
-		dataStorage = new UserDataStorage();
+		if(SQLHelper.isAvailable()) {
+			tokenStorage = new SQLAccessTokenStorage();
+			dataStorage = new SQLUserDataStorage();
+		}else {
+			tokenStorage = new FileAccessTokenStorage();
+			dataStorage = new FileUserDataStorage();
+		}
+
+		tokenStorage.initialize();
+		dataStorage.initialize();
+
 		config = new FileConfig(new File("shittyauth/shittyauth.yml"));
 		config.registerSettings(ShittyAuthSettings.INSTANCE);
 
@@ -81,6 +104,8 @@ public class ShittyAuth {
 		PlayerAttributesDocument doc = new PlayerAttributesDocument();
 		Webinterface.getDocumentProvider().registerDocument("/player/attributes", doc);
 		Webinterface.getDocumentProvider().registerDocument("/privileges", doc); // for MC 1.16 or older
+		Webinterface.getDocumentProvider().registerDocument("/player/certificates", new PlayerCertificatesDocument());
+		Webinterface.getDocumentProvider().registerDocument("/player/report", new PlayerReportDocument());
 		Webinterface.getDocumentProvider().registerFileDocument("/yggdrasil_session_pubkey.der", new File("shittyauth/public_key.der"));
 
 		Webinterface.getDocumentProvider().registerDocument("/game/joinserver.jsp", new LegacyJoinServerDocument());
@@ -94,8 +119,20 @@ public class ShittyAuth {
 		Webinterface.registerActionHandler(new ShittyAuthWIHandler());
 
 		PageCategory cat = Webinterface.createCategory("Minecraft");
-		cat.addPage(new MCAccountPage());
+		cat.addPage(new AccountPage());
+		cat.addPage(new CreateAccountPage());
 		cat.addPage(new SettingsPage());
+	}
+
+	public static Account getAccountByUsername(String username) {
+		// TODO: more efficient implementation?
+		for(Account a : Webinterface.getAccountStorage().getAccounts()) {
+			AccountConnection con = a.getConnection(ShittyAuth.ACCOUNT_CONNECTION_NAME);
+			if(con != null && con.getUserName().equals(username)) {
+				return a;
+			}
+		}
+		return null;
 	}
 
 }

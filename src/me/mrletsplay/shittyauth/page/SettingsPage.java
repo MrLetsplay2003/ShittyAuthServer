@@ -9,10 +9,10 @@ import me.mrletsplay.webinterfaceapi.page.element.SettingsPane;
 
 public class SettingsPage extends Page {
 
-	public static final String URL = "/mc/settings";
+	public static final String PATH = "/shittyauth/settings";
 
 	public SettingsPage() {
-		super("Settings", URL, DefaultPermissions.SETTINGS);
+		super("Settings", PATH, DefaultPermissions.SETTINGS);
 		setIcon("mdi:cog");
 
 		PageSection sc2 = new PageSection();

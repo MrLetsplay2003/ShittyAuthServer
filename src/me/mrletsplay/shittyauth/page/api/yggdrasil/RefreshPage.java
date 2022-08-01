@@ -6,16 +6,16 @@ import java.util.UUID;
 import me.mrletsplay.mrcore.json.JSONArray;
 import me.mrletsplay.mrcore.json.JSONObject;
 import me.mrletsplay.shittyauth.ShittyAuth;
-import me.mrletsplay.shittyauth.UUIDHelper;
 import me.mrletsplay.shittyauth.auth.AccessToken;
 import me.mrletsplay.shittyauth.auth.StoredAccessToken;
+import me.mrletsplay.shittyauth.util.UUIDHelper;
 import me.mrletsplay.simplehttpserver.http.HttpStatusCodes;
 import me.mrletsplay.simplehttpserver.http.document.HttpDocument;
 import me.mrletsplay.simplehttpserver.http.header.DefaultClientContentTypes;
 import me.mrletsplay.simplehttpserver.http.request.HttpRequestContext;
 import me.mrletsplay.webinterfaceapi.Webinterface;
 import me.mrletsplay.webinterfaceapi.auth.Account;
-import me.mrletsplay.webinterfaceapi.auth.impl.PasswordAuth;
+import me.mrletsplay.webinterfaceapi.auth.AccountConnection;
 
 public class RefreshPage implements HttpDocument {
 
@@ -38,7 +38,7 @@ public class RefreshPage implements HttpDocument {
 			return;
 		}
 
-		Account acc = Webinterface.getAccountStorage().getAccountByID(tok.getAccountID());
+		Account acc = Webinterface.getAccountStorage().getAccountByConnectionSpecificID(ShittyAuth.ACCOUNT_CONNECTION_NAME, tok.getAccountID());
 		if(acc == null) {
 			ctx.getServerHeader().setStatusCode(HttpStatusCodes.ACCESS_DENIED_403);
 			JSONObject err = new JSONObject();
@@ -50,21 +50,23 @@ public class RefreshPage implements HttpDocument {
 		// Invalidate the old token
 		ShittyAuth.tokenStorage.removeToken(accessToken);
 
+		AccountConnection con = acc.getConnection(ShittyAuth.ACCOUNT_CONNECTION_NAME);
+
 		// Then create a new token
-		AccessToken newTok = ShittyAuth.tokenStorage.generateToken(acc.getID(), clientToken);
+		AccessToken newTok = ShittyAuth.tokenStorage.generateToken(con.getUserID(), clientToken);
 
 		JSONObject r = new JSONObject();
 		r.put("accessToken", newTok.getAccessToken());
 		r.put("clientToken", newTok.getClientToken());
 
 		JSONObject selectedProfile = new JSONObject();
-		selectedProfile.put("id", UUIDHelper.toShortUUID(UUID.fromString(acc.getID())));
-		selectedProfile.put("name", acc.getConnection(PasswordAuth.ID).getUserName());
+		selectedProfile.put("id", UUIDHelper.toShortUUID(UUID.fromString(con.getUserID())));
+		selectedProfile.put("name", con.getUserName());
 		r.put("selectedProfile", selectedProfile);
 
 		if(requestUser) { // To be compliant with Yggdrasil (https://wiki.vg/Authentication#Refresh)
 			JSONObject user = new JSONObject();
-			user.put("username", acc.getConnection(PasswordAuth.ID).getUserName());
+			user.put("username", con.getUserName());
 			user.put("id", acc.getID());
 
 			user.put("properties", new JSONArray()); // TODO: Maybe add preferredLanguage?

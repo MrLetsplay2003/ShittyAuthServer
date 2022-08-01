@@ -1,27 +1,11 @@
 package me.mrletsplay.shittyauth.user;
 
-import java.io.File;
+public interface UserDataStorage {
 
-import me.mrletsplay.mrcore.config.ConfigLoader;
-import me.mrletsplay.mrcore.config.FileCustomConfig;
-import me.mrletsplay.mrcore.config.mapper.JSONObjectMapper;
+	public void initialize();
 
-public class UserDataStorage {
-	
-	private FileCustomConfig config;
-	
-	public UserDataStorage() {
-		config = ConfigLoader.loadFileConfig(new File("shittyauth/user-data.yml"));
-		config.registerMapper(JSONObjectMapper.create(UserData.class));
-	}
-	
-	public void updateUserData(String accID, UserData userData) {
-		config.set(accID, userData);
-		config.saveToFile();
-	}
-	
-	public UserData getUserData(String accID) {
-		return config.getGeneric(accID, UserData.class, new UserData(), false);
-	}
-	
+	public void updateUserData(String accID, UserData userData);
+
+	public UserData getUserData(String accID);
+
 }

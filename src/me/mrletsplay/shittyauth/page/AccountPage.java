@@ -1,8 +1,12 @@
-package me.mrletsplay.shittyauth.webinterface;
+package me.mrletsplay.shittyauth.page;
 
 import me.mrletsplay.shittyauth.ShittyAuth;
 import me.mrletsplay.shittyauth.textures.SkinType;
 import me.mrletsplay.shittyauth.user.UserData;
+import me.mrletsplay.simplehttpserver.http.HttpStatusCodes;
+import me.mrletsplay.simplehttpserver.http.request.HttpRequestContext;
+import me.mrletsplay.webinterfaceapi.auth.Account;
+import me.mrletsplay.webinterfaceapi.auth.AccountConnection;
 import me.mrletsplay.webinterfaceapi.page.Page;
 import me.mrletsplay.webinterfaceapi.page.PageSection;
 import me.mrletsplay.webinterfaceapi.page.action.SendJSAction;
@@ -20,17 +24,19 @@ import me.mrletsplay.webinterfaceapi.page.element.layout.DefaultLayoutOption;
 import me.mrletsplay.webinterfaceapi.page.element.layout.Grid;
 import me.mrletsplay.webinterfaceapi.session.Session;
 
-public class MCAccountPage extends Page {
+public class AccountPage extends Page {
 
-	public MCAccountPage() {
-		super("MC Account", "/mc/account");
+	public static final String PATH = "/shittyauth/account";
+
+	public AccountPage() {
+		super("Account", PATH);
 		setIcon("mdi:minecraft");
 
 		PageSection s = new PageSection();
 		s.setSlimLayout(true);
 		s.setGrid(new Grid().setColumns("75fr", "25fr"));
 		s.dynamic(els -> {
-			UserData d = ShittyAuth.dataStorage.getUserData(Session.getCurrentSession().getAccountID());
+			UserData d = ShittyAuth.dataStorage.getUserData(Session.getCurrentSession().getAccount().getConnection(ShittyAuth.ACCOUNT_CONNECTION_NAME).getUserID());
 
 			els.add(TitleText.builder()
 					.leftboundText()
@@ -96,7 +102,7 @@ public class MCAccountPage extends Page {
 				.create());
 
 		s.dynamic(() -> {
-			UserData d = ShittyAuth.dataStorage.getUserData(Session.getCurrentSession().getAccountID());
+			UserData d = ShittyAuth.dataStorage.getUserData(Session.getCurrentSession().getAccount().getConnection(ShittyAuth.ACCOUNT_CONNECTION_NAME).getUserID());
 
 			return CheckBox.builder()
 					.initialState(d.hasCape())
@@ -105,6 +111,22 @@ public class MCAccountPage extends Page {
 		});
 
 		addSection(s);
+	}
+
+	@Override
+	public void createContent() {
+		if(!Session.requireSession()) return;
+
+		HttpRequestContext ctx = HttpRequestContext.getCurrentContext();
+		Account acc = Session.getCurrentSession().getAccount();
+		AccountConnection mcCon = acc.getConnection(ShittyAuth.ACCOUNT_CONNECTION_NAME);
+		if(mcCon == null) {
+			ctx.getServerHeader().setStatusCode(HttpStatusCodes.FOUND_302);
+			ctx.getServerHeader().getFields().set("Location", CreateAccountPage.PATH);
+			return;
+		}
+
+		super.createContent();
 	}
 
 }

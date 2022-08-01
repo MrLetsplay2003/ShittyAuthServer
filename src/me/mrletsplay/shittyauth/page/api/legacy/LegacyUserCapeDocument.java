@@ -5,12 +5,13 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
+import me.mrletsplay.shittyauth.ShittyAuth;
 import me.mrletsplay.simplehttpserver.http.HttpStatusCodes;
 import me.mrletsplay.simplehttpserver.http.document.HttpDocument;
 import me.mrletsplay.simplehttpserver.http.request.HttpRequestContext;
 import me.mrletsplay.webinterfaceapi.Webinterface;
 import me.mrletsplay.webinterfaceapi.auth.Account;
-import me.mrletsplay.webinterfaceapi.auth.impl.PasswordAuth;
+import me.mrletsplay.webinterfaceapi.auth.AccountConnection;
 
 public class LegacyUserCapeDocument implements HttpDocument {
 
@@ -22,14 +23,16 @@ public class LegacyUserCapeDocument implements HttpDocument {
 		HttpRequestContext ctx = HttpRequestContext.getCurrentContext();
 		String username = ctx.getPathParameters().get("name");
 		if(username.endsWith(".png")) username = username.substring(0, username.length() - ".png".length());
-		Account acc = Webinterface.getAccountStorage().getAccountByConnectionSpecificID(PasswordAuth.ID, username);
+		Account acc = ShittyAuth.getAccountByUsername(username);
 		if(acc == null) {
 			ctx.getServerHeader().setStatusCode(HttpStatusCodes.NOT_FOUND_404);
 			ctx.getServerHeader().setContent("text/plain", "404 Not Found".getBytes(StandardCharsets.UTF_8));
 			return;
 		}
 
-		File f = new File("shittyauth/capes/", acc.getID() + ".png");
+		AccountConnection con = acc.getConnection(ShittyAuth.ACCOUNT_CONNECTION_NAME);
+
+		File f = new File("shittyauth/capes/", con.getUserID() + ".png");
 		if(!f.exists()) f = new File("include/default_cape.png");
 
 		try {

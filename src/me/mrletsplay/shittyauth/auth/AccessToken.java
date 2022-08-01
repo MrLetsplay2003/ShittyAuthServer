@@ -1,27 +1,38 @@
 package me.mrletsplay.shittyauth.auth;
 
-public class AccessToken {
-	
+import java.util.Objects;
+
+public class AccessToken extends StoredAccessToken {
+
 	private String accessToken;
-	private String accountID;
-	private String clientToken;
-	
-	public AccessToken(String accessToken, String accountID, String clientToken) {
+
+	public AccessToken(String clientToken, String accountID, long softExpiresAt, long expiresAt, String accessToken) {
+		super(clientToken, accountID, softExpiresAt, expiresAt);
 		this.accessToken = accessToken;
-		this.accountID = accountID;
-		this.clientToken = clientToken;
 	}
 
 	public String getAccessToken() {
 		return accessToken;
 	}
-	
-	public String getAccountID() {
-		return accountID;
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + Objects.hash(accessToken);
+		return result;
 	}
-	
-	public String getClientToken() {
-		return clientToken;
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		AccessToken other = (AccessToken) obj;
+		return Objects.equals(accessToken, other.accessToken);
 	}
-	
+
 }

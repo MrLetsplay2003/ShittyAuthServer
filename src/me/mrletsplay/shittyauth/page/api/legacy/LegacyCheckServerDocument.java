@@ -1,17 +1,14 @@
 package me.mrletsplay.shittyauth.page.api.legacy;
 
 import java.nio.charset.StandardCharsets;
-import java.util.UUID;
 
 import me.mrletsplay.shittyauth.ShittyAuth;
-import me.mrletsplay.shittyauth.UUIDHelper;
 import me.mrletsplay.simplehttpserver.http.HttpStatusCodes;
 import me.mrletsplay.simplehttpserver.http.document.HttpDocument;
 import me.mrletsplay.simplehttpserver.http.request.HttpRequestContext;
 import me.mrletsplay.simplehttpserver.http.request.urlencoded.URLEncoded;
-import me.mrletsplay.webinterfaceapi.Webinterface;
 import me.mrletsplay.webinterfaceapi.auth.Account;
-import me.mrletsplay.webinterfaceapi.auth.impl.PasswordAuth;
+import me.mrletsplay.webinterfaceapi.auth.AccountConnection;
 
 public class LegacyCheckServerDocument implements HttpDocument {
 
@@ -29,8 +26,9 @@ public class LegacyCheckServerDocument implements HttpDocument {
 		String accName = query.getFirst("user");
 		String serverId = query.getFirst("serverId");
 
-		Account acc = Webinterface.getAccountStorage().getAccountByConnectionSpecificID(PasswordAuth.ID, accName);
-		String joinedServer = ShittyAuth.userServers.get(UUIDHelper.toShortUUID(UUID.fromString(acc.getID())));
+		Account acc = ShittyAuth.getAccountByUsername(accName);
+		AccountConnection con = acc.getConnection(ShittyAuth.ACCOUNT_CONNECTION_NAME);
+		String joinedServer = ShittyAuth.userServers.get(con.getUserID());
 		if(joinedServer == null || !joinedServer.equals(serverId)) {
 			ctx.getServerHeader().setStatusCode(HttpStatusCodes.UNAUTHORIZED_401);
 			return;

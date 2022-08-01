@@ -1,23 +1,25 @@
 package me.mrletsplay.shittyauth.auth;
 
-import me.mrletsplay.mrcore.json.converter.JSONConstructor;
-import me.mrletsplay.mrcore.json.converter.JSONConvertible;
-import me.mrletsplay.mrcore.json.converter.JSONValue;
+public class StoredAccessToken {
 
-public class StoredAccessToken implements JSONConvertible {
-	
-	@JSONValue
-	private String clientToken;
-	
-	@JSONValue
-	private String accountID;
+	protected String clientToken;
+	protected String accountID;
 
-	@JSONConstructor
-	private StoredAccessToken() {}
-	
-	public StoredAccessToken(String clientToken, String accountID) {
+	/**
+	 * Time when the token becomes unusable for authentication when joining a server, but can still be refreshed
+	 */
+	protected long softExpiresAt;
+
+	/**
+	 * Time when the token fully expires and cannot be refreshed anymore
+	 */
+	protected long expiresAt;
+
+	public StoredAccessToken(String clientToken, String accountID, long softExpiresAt, long expiresAt) {
 		this.clientToken = clientToken;
 		this.accountID = accountID;
+		this.softExpiresAt = softExpiresAt;
+		this.expiresAt = expiresAt;
 	}
 
 	public String getClientToken() {
@@ -26,6 +28,14 @@ public class StoredAccessToken implements JSONConvertible {
 
 	public String getAccountID() {
 		return accountID;
+	}
+
+	public long getSoftExpiresAt() {
+		return softExpiresAt;
+	}
+
+	public long getExpiresAt() {
+		return expiresAt;
 	}
 
 	@Override
@@ -58,5 +68,5 @@ public class StoredAccessToken implements JSONConvertible {
 			return false;
 		return true;
 	}
-	
+
 }
