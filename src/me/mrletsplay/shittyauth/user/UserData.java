@@ -3,7 +3,9 @@ package me.mrletsplay.shittyauth.user;
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.util.Base64;
 
+import me.mrletsplay.mrcore.json.JSONObject;
 import me.mrletsplay.mrcore.json.converter.JSONConstructor;
 import me.mrletsplay.mrcore.json.converter.JSONConvertible;
 import me.mrletsplay.mrcore.json.converter.JSONValue;
@@ -31,12 +33,7 @@ public class UserData implements JSONConvertible {
 	private PrivateKey privateKey;
 
 	@JSONConstructor
-	public UserData() {
-		this.skinType = SkinType.STEVE;
-		KeyPair pair = CryptoHelper.generateRSAKeyPair();
-		this.publicKey = pair.getPublic();
-		this.privateKey = pair.getPrivate();
-	}
+	private UserData() {}
 
 	public UserData(boolean hasCape, SkinType skinType, long skinLastChanged, long capeLastChanged, PublicKey publicKey, PrivateKey privateKey) {
 		this.hasCape = hasCape;
@@ -85,6 +82,35 @@ public class UserData implements JSONConvertible {
 
 	public PrivateKey getPrivateKey() {
 		return privateKey;
+	}
+
+	public boolean hasKeyPair() {
+		return publicKey != null && privateKey != null;
+	}
+
+	public void generateNewKeyPair() {
+		KeyPair pair = CryptoHelper.generateRSAKeyPair();
+		this.publicKey = pair.getPublic();
+		this.privateKey = pair.getPrivate();
+	}
+
+	@Override
+	public void preSerialize(JSONObject object) {
+		object.put("publicKey" ,Base64.getEncoder().encodeToString(publicKey.getEncoded()));
+		object.put("privateKey" ,Base64.getEncoder().encodeToString(privateKey.getEncoded()));
+	}
+
+	@Override
+	public void preDeserialize(JSONObject object) {
+		publicKey = CryptoHelper.parseRSAPublicKey(Base64.getDecoder().decode(object.getString("publicKey")));
+		privateKey = CryptoHelper.parseRSAPrivateKey(Base64.getDecoder().decode(object.getString("privateKey")));
+	}
+
+	public static UserData createNew() {
+		UserData ud = new UserData();
+		ud.setSkinType(SkinType.STEVE);
+		ud.generateNewKeyPair();
+		return ud;
 	}
 
 }

@@ -25,7 +25,7 @@ public class FileUserDataStorage implements UserDataStorage {
 
 	@Override
 	public UserData getUserData(String accID) {
-		return config.getGeneric(accID, UserData.class, new UserData(), false);
+		return config.getGeneric(accID, UserData.class, null, false);
 	}
 
 }

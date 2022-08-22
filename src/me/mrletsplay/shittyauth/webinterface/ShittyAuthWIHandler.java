@@ -39,7 +39,7 @@ public class ShittyAuthWIHandler implements ActionHandler {
 		AccountConnection con = new AccountConnection(ShittyAuth.ACCOUNT_CONNECTION_NAME, uuid.toString(), username, null, null);
 		acc.addConnection(con);
 		Webinterface.getCredentialsStorage().storeCredentials(ShittyAuth.ACCOUNT_CONNECTION_NAME, uuid.toString(), password);
-		ShittyAuth.dataStorage.updateUserData(con.getUserID(), new UserData());
+		ShittyAuth.dataStorage.updateUserData(con.getUserID(), UserData.createNew());
 
 		return ActionResponse.success();
 	}
