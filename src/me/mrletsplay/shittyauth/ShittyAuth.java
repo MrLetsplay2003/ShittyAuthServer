@@ -12,6 +12,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,6 +25,8 @@ import me.mrletsplay.shittyauth.page.CreateAccountPage;
 import me.mrletsplay.shittyauth.page.SettingsPage;
 import me.mrletsplay.shittyauth.page.api.UserCapeDocument;
 import me.mrletsplay.shittyauth.page.api.UserSkinDocument;
+import me.mrletsplay.shittyauth.page.api.authlibinjector.AuthLibInjectorDocument;
+import me.mrletsplay.shittyauth.page.api.authlibinjector.AuthLibInjectorMetadataDocument;
 import me.mrletsplay.shittyauth.page.api.legacy.LegacyCheckServerDocument;
 import me.mrletsplay.shittyauth.page.api.legacy.LegacyJoinServerDocument;
 import me.mrletsplay.shittyauth.page.api.legacy.LegacyUserCapeDocument;
@@ -33,8 +36,10 @@ import me.mrletsplay.shittyauth.page.api.services.PlayerCertificatesDocument;
 import me.mrletsplay.shittyauth.page.api.services.PlayerReportDocument;
 import me.mrletsplay.shittyauth.page.api.yggdrasil.AuthenticatePage;
 import me.mrletsplay.shittyauth.page.api.yggdrasil.HasJoinedPage;
+import me.mrletsplay.shittyauth.page.api.yggdrasil.InvalidatePage;
 import me.mrletsplay.shittyauth.page.api.yggdrasil.JoinPage;
 import me.mrletsplay.shittyauth.page.api.yggdrasil.ProfilePage;
+import me.mrletsplay.shittyauth.page.api.yggdrasil.RefreshPage;
 import me.mrletsplay.shittyauth.page.api.yggdrasil.ValidatePage;
 import me.mrletsplay.shittyauth.user.FileUserDataStorage;
 import me.mrletsplay.shittyauth.user.SQLUserDataStorage;
@@ -52,6 +57,7 @@ public class ShittyAuth {
 
 	public static final String ACCOUNT_CONNECTION_NAME = "shittyauth";
 
+	public static PublicKey publicKey;
 	public static PrivateKey privateKey;
 	public static AccessTokenStorage tokenStorage;
 	public static UserDataStorage dataStorage;
@@ -77,9 +83,9 @@ public class ShittyAuth {
 		config = new FileConfig(new File("shittyauth/shittyauth.yml"));
 		config.registerSettings(ShittyAuthSettings.INSTANCE);
 
+		File publicKeyFile = new File("shittyauth/public_key.der");
 		File privateKeyFile = new File("shittyauth/private_key.der");
-		if(!privateKeyFile.exists()) {
-			File publicKeyFile = new File("shittyauth/public_key.der");
+		if(!privateKeyFile.exists() || !publicKeyFile.exists()) {
 			KeyPairGenerator gen = KeyPairGenerator.getInstance("RSA");
 			gen.initialize(4096);
 
@@ -93,14 +99,22 @@ public class ShittyAuth {
 			Webinterface.getLogger().info("Generated a new key pair");
 		}
 
-		PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(Files.readAllBytes(privateKeyFile.toPath()));
 		KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-		privateKey = keyFactory.generatePrivate(spec);
+
+		X509EncodedKeySpec pubSpec = new X509EncodedKeySpec(Files.readAllBytes(publicKeyFile.toPath()));
+		publicKey = keyFactory.generatePublic(pubSpec);
+		PKCS8EncodedKeySpec privSpec = new PKCS8EncodedKeySpec(Files.readAllBytes(privateKeyFile.toPath()));
+		privateKey = keyFactory.generatePrivate(privSpec);
 
 		Webinterface.getDocumentProvider().registerDocument("/session/minecraft/hasJoined", new HasJoinedPage());
 		Webinterface.getDocumentProvider().registerDocument("/session/minecraft/join", new JoinPage());
+		Webinterface.getDocumentProvider().registerDocumentPattern("/session/minecraft/profile/{uuid}", ProfilePage.INSTANCE);
 		Webinterface.getDocumentProvider().registerDocument("/authenticate", new AuthenticatePage());
 		Webinterface.getDocumentProvider().registerDocument("/validate", new ValidatePage());
+		Webinterface.getDocumentProvider().registerDocument("/invalidate", new InvalidatePage());
+		Webinterface.getDocumentProvider().registerDocument("/signout", new InvalidatePage());
+		Webinterface.getDocumentProvider().registerDocument("/refresh", new RefreshPage());
+
 		PlayerAttributesDocument doc = new PlayerAttributesDocument();
 		Webinterface.getDocumentProvider().registerDocument("/player/attributes", doc);
 		Webinterface.getDocumentProvider().registerDocument("/privileges", doc); // for MC 1.16 or older
@@ -112,9 +126,14 @@ public class ShittyAuth {
 		Webinterface.getDocumentProvider().registerDocument("/game/checkserver.jsp", new LegacyCheckServerDocument());
 		Webinterface.getDocumentProvider().registerDocumentPattern("/cape/{uuid}", UserCapeDocument.INSTANCE);
 		Webinterface.getDocumentProvider().registerDocumentPattern("/skin/{uuid}", UserSkinDocument.INSTANCE);
-		Webinterface.getDocumentProvider().registerDocumentPattern("/session/minecraft/profile/{uuid}", ProfilePage.INSTANCE);
 		Webinterface.getDocumentProvider().registerDocumentPattern("/MinecraftSkins/{name}", LegacyUserSkinDocument.INSTANCE);
 		Webinterface.getDocumentProvider().registerDocumentPattern("/MinecraftCapes/{name}", LegacyUserCapeDocument.INSTANCE);
+
+		if(ShittyAuth.config.getSetting(ShittyAuthSettings.AUTHLIB_INJECTOR_COMPAT)) {
+			Webinterface.getDocumentProvider().registerDocument("/authserver", new AuthLibInjectorMetadataDocument());
+			Webinterface.getDocumentProvider().registerDocumentPattern("/authserver/{page...}", new AuthLibInjectorDocument());
+			Webinterface.getDocumentProvider().registerDocumentPattern("/skins/MinecraftSkins/{name}", LegacyUserSkinDocument.INSTANCE);
+		}
 
 		Webinterface.registerActionHandler(new ShittyAuthWIHandler());
 
@@ -128,7 +147,7 @@ public class ShittyAuth {
 		// TODO: more efficient implementation?
 		for(Account a : Webinterface.getAccountStorage().getAccounts()) {
 			AccountConnection con = a.getConnection(ShittyAuth.ACCOUNT_CONNECTION_NAME);
-			if(con != null && con.getUserName().equals(username)) {
+			if(con != null && con.getUserName().equalsIgnoreCase(username)) {
 				return a;
 			}
 		}

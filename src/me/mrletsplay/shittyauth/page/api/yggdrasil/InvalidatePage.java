@@ -41,6 +41,7 @@ public class InvalidatePage implements HttpDocument {
 
 		// Invalidate the token
 		ShittyAuth.tokenStorage.removeToken(accessToken);
+		ctx.getServerHeader().setStatusCode(HttpStatusCodes.NO_CONTENT_204);
 	}
 
 }

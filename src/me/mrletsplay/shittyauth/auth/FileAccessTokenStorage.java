@@ -69,6 +69,16 @@ public class FileAccessTokenStorage implements AccessTokenStorage {
 	}
 
 	@Override
+	public void removeTokensByAccountID(String accID) {
+		for(String k : config.getKeys()) {
+			if(accID.equals(config.getString(k + ".account-id"))) {
+				config.unset(k);
+			}
+		}
+		config.saveToFile();
+	}
+
+	@Override
 	public void cleanUp() {
 		long currentTime = System.currentTimeMillis();
 		for(String k : config.getKeys()) {

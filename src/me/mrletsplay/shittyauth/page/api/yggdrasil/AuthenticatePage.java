@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import me.mrletsplay.mrcore.json.JSONArray;
 import me.mrletsplay.mrcore.json.JSONObject;
+import me.mrletsplay.mrcore.json.JSONParseException;
 import me.mrletsplay.shittyauth.ShittyAuth;
 import me.mrletsplay.shittyauth.auth.AccessToken;
 import me.mrletsplay.shittyauth.util.UUIDHelper;
@@ -23,7 +24,18 @@ public class AuthenticatePage implements HttpDocument {
 	@Override
 	public void createContent() {
 		HttpRequestContext ctx = HttpRequestContext.getCurrentContext();
-		JSONObject obj = ctx.getClientHeader().getPostData().getParsedAs(DefaultClientContentTypes.JSON_OBJECT);
+
+		JSONObject obj;
+		try {
+			obj = ctx.getClientHeader().getPostData().getParsedAs(DefaultClientContentTypes.JSON_OBJECT);
+		}catch(JSONParseException e) {
+			ctx.getServerHeader().setStatusCode(HttpStatusCodes.UNAUTHORIZED_401);
+			JSONObject response = new JSONObject();
+			response.put("error", "ForbiddenOperationException");
+			response.put("errorMessage", "Forbidden");
+			ctx.getServerHeader().setContent("application/json", response.toString().getBytes(StandardCharsets.UTF_8));
+			return;
+		}
 
 		if(!obj.has("username") || !obj.has("password")) {
 			ctx.getServerHeader().setStatusCode(HttpStatusCodes.UNAUTHORIZED_401);
@@ -40,8 +52,10 @@ public class AuthenticatePage implements HttpDocument {
 			clientToken = obj.optString("clientToken").orElse(null);
 
 		Account acc = ShittyAuth.getAccountByUsername(username);
-		AccountConnection con = acc.getConnection(ShittyAuth.ACCOUNT_CONNECTION_NAME);
-		if(acc == null || !Webinterface.getCredentialsStorage().checkCredentials(ShittyAuth.ACCOUNT_CONNECTION_NAME, con.getUserID(), password)) {
+		AccountConnection con;
+		if(acc == null
+			|| (con = acc.getConnection(ShittyAuth.ACCOUNT_CONNECTION_NAME)) == null
+			|| !Webinterface.getCredentialsStorage().checkCredentials(ShittyAuth.ACCOUNT_CONNECTION_NAME, con.getUserID(), password)) {
 			ctx.getServerHeader().setStatusCode(HttpStatusCodes.UNAUTHORIZED_401);
 			JSONObject response = new JSONObject();
 			response.put("error", "ForbiddenOperationException");

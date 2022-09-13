@@ -3,7 +3,7 @@ package me.mrletsplay.shittyauth.config;
 import me.mrletsplay.webinterfaceapi.config.setting.AutoSetting;
 import me.mrletsplay.webinterfaceapi.config.setting.AutoSettings;
 import me.mrletsplay.webinterfaceapi.config.setting.SettingsCategory;
-import me.mrletsplay.webinterfaceapi.config.setting.impl.StringSetting;
+import me.mrletsplay.webinterfaceapi.config.setting.impl.BooleanSetting;
 
 public class ShittyAuthSettings implements AutoSettings {
 
@@ -14,8 +14,8 @@ public class ShittyAuthSettings implements AutoSettings {
 		http = new SettingsCategory("HTTP");
 
 	// HTTP
-	public static final StringSetting
-		SKIN_BASE_URL = http.addString("http.skin-base-url", null, "Skin base URL", "Base URL to use for skin/cape URLs (uses default HTTP host if not set)");
+	public static final BooleanSetting
+		AUTHLIB_INJECTOR_COMPAT = http.addBoolean("http.authlib-injector-compat", false, "Authlib-injector compat (Requires restart)", "Enable compatibility for authlib-injector");
 
 	private ShittyAuthSettings() {}
 

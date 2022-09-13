@@ -5,6 +5,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 import javax.imageio.ImageIO;
 
@@ -25,6 +26,8 @@ import me.mrletsplay.webinterfaceapi.page.element.FileUpload;
 
 public class ShittyAuthWIHandler implements ActionHandler {
 
+	private static final Pattern USERNAME_PATTERN = Pattern.compile("[a-zA-Z0-9_]{3,16}");
+
 	@WebinterfaceHandler(requestTarget = "shittyauth", requestTypes = "createAccount")
 	public ActionResponse createAccount(ActionEvent event) {
 		Account acc = event.getAccount();
@@ -32,6 +35,8 @@ public class ShittyAuthWIHandler implements ActionHandler {
 
 		String username = event.getData().getString("username");
 		String password = event.getData().getString("password");
+
+		if(!USERNAME_PATTERN.matcher(username).matches()) return ActionResponse.error("Invalid username");
 
 		if(ShittyAuth.getAccountByUsername(username) != null) return ActionResponse.error("An account with that username already exists");
 

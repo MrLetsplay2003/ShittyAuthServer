@@ -18,6 +18,8 @@ public interface AccessTokenStorage {
 
 	public void removeToken(String token);
 
+	public void removeTokensByAccountID(String accID);
+
 	public void cleanUp();
 
 	public default AccessToken createNewToken(String accountID, String clientToken) {

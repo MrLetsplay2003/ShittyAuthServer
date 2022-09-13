@@ -94,6 +94,16 @@ public class SQLAccessTokenStorage implements AccessTokenStorage {
 	}
 
 	@Override
+	public void removeTokensByAccountID(String accID) {
+		SQLHelper.run(c -> {
+			try(PreparedStatement st = c.prepareStatement("DELETE FROM " + SQLHelper.tableName("shittyauth_tokens") + " WHERE AccountId = ?")) {
+				st.setString(1, accID);
+				st.execute();
+			}
+		});
+	}
+
+	@Override
 	public void cleanUp() {
 		long currentTime = System.currentTimeMillis();
 		SQLHelper.run(c -> {

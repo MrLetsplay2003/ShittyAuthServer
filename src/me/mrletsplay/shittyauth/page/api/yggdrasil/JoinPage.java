@@ -28,7 +28,6 @@ public class JoinPage implements HttpDocument {
 
 		ShittyAuth.userServers.put(accID, authData.getString("serverId"));
 		ctx.getServerHeader().setStatusCode(HttpStatusCodes.NO_CONTENT_204);
-		ctx.getServerHeader().setContent(new byte[0]);
 	}
 
 }
