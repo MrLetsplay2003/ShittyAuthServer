@@ -93,12 +93,12 @@
 		<dependency>
 			<groupId>me.mrletsplay</groupId>
 			<artifactId>WebinterfaceAPI</artifactId>
-			<version>3.3.2</version>
+			<version>3.3.3</version>
 		</dependency>
 		<dependency>
 			<groupId>me.mrletsplay</groupId>
 			<artifactId>SimpleHTTPServer</artifactId>
-			<version>1.2.3</version>
+			<version>1.2.4</version>
 		</dependency>
 		<dependency>
 			<groupId>me.mrletsplay</groupId>
