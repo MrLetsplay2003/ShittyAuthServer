@@ -123,6 +123,19 @@ public class ShittyAuthWIHandler implements ActionHandler {
 		return ActionResponse.success();
 	}
 
+	@WebinterfaceHandler(requestTarget = "shittyauth", requestTypes = "resetPassword")
+	public ActionResponse resetPassword(ActionEvent event) {
+		Account acc = event.getAccount();
+		AccountConnection con = acc.getConnection(ShittyAuth.ACCOUNT_CONNECTION_NAME);
+		if(con == null) return ActionResponse.error("No Minecraft account");
+
+		String password = event.getData().getString("password");
+		Webinterface.getCredentialsStorage().storeCredentials(ShittyAuth.ACCOUNT_CONNECTION_NAME, con.getUserID(), password);
+		ShittyAuth.tokenStorage.removeTokensByAccountID(con.getUserID()); // Invalidate all sessions
+
+		return ActionResponse.success();
+	}
+
 	@WebinterfaceHandler(requestTarget = "shittyauth", requestTypes = "setSetting")
 	public ActionResponse setSetting(ActionEvent event) {
 		if(!event.getAccount().hasPermission(DefaultPermissions.SETTINGS)) return ActionResponse.error("No permission");
