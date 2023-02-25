@@ -85,8 +85,8 @@
 	</pluginRepositories>
 	<repositories>
 		<repository>
-			<id>graphite-official</id>
-			<url>https://maven.graphite-official.com</url>
+			<id>Graphite-Official</id>
+			<url>https://maven.graphite-official.com/releases</url>
 		</repository>
 	</repositories>
 	<dependencies>
