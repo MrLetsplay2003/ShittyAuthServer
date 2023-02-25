@@ -79,8 +79,8 @@
 	</build>
 	<pluginRepositories>
 		<pluginRepository>
-			<id>graphite-official</id>
-			<url>https://maven.graphite-official.com</url>
+			<id>Graphite-Official</id>
+			<url>https://maven.graphite-official.com/releases</url>
 		</pluginRepository>
 	</pluginRepositories>
 	<repositories>
