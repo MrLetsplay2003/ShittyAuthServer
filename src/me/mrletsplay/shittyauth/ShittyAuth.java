@@ -39,6 +39,7 @@ import me.mrletsplay.shittyauth.page.api.yggdrasil.HasJoinedPage;
 import me.mrletsplay.shittyauth.page.api.yggdrasil.InvalidatePage;
 import me.mrletsplay.shittyauth.page.api.yggdrasil.JoinPage;
 import me.mrletsplay.shittyauth.page.api.yggdrasil.ProfilePage;
+import me.mrletsplay.shittyauth.page.api.yggdrasil.PublicKeysPage;
 import me.mrletsplay.shittyauth.page.api.yggdrasil.RefreshPage;
 import me.mrletsplay.shittyauth.page.api.yggdrasil.ValidatePage;
 import me.mrletsplay.shittyauth.user.FileUserDataStorage;
@@ -114,6 +115,7 @@ public class ShittyAuth {
 		Webinterface.getDocumentProvider().registerDocument("/invalidate", new InvalidatePage());
 		Webinterface.getDocumentProvider().registerDocument("/signout", new InvalidatePage());
 		Webinterface.getDocumentProvider().registerDocument("/refresh", new RefreshPage());
+		Webinterface.getDocumentProvider().registerDocument("/publickeys", new PublicKeysPage());
 
 		PlayerAttributesDocument doc = new PlayerAttributesDocument();
 		Webinterface.getDocumentProvider().registerDocument("/player/attributes", doc);
