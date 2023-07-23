@@ -1,0 +1,11 @@
+{
+	"updateUID": true,
+	"user": "shittyauth",
+
+	"updateGID": true,
+	"group": "shittyauth",
+
+	"runBefore": [
+		[ "chown", "-R", "shittyauth:shittyauth", "/shittyauth" ]
+	]
+}

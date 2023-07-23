@@ -1,18 +1,23 @@
 FROM maven:latest as builder
 
-ADD . /workspace
+COPY . /workspace
 
 WORKDIR /workspace
 
 RUN mvn clean package
 
+
+
 FROM alpine:latest
 
-RUN apk update && apk add openjdk11
+ENV UID=1000
+ENV GID=1000
+
+RUN apk update && apk add openjdk11 shadow sudo
 
 COPY --from=builder /workspace/target/ShittyAuthServer-*.jar /shittyauth/ShittyAuthServer.jar
-
-RUN apk update && apk add shadow
+COPY --from=mrletsplay/docker_launcher /usr/local/bin/docker_launcher /usr/local/bin/docker_launcher
+COPY ./docker/launcher_config.json /shittyauth/launcher_config.json
 
 RUN useradd shittyauth
 
@@ -22,8 +27,7 @@ VOLUME ["/shittyauth/data"]
 
 WORKDIR /shittyauth/data
 
-USER shittyauth
-
 EXPOSE 8880
 
+ENTRYPOINT [ "docker_launcher", "--config", "/shittyauth/launcher_config.json", "sudo", "-u", "shittyauth" ]
 CMD [ "java", "-jar", "/shittyauth/ShittyAuthServer.jar" ]
