@@ -1,6 +1,7 @@
 package me.mrletsplay.shittyauth.page.api.yggdrasil;
 
 import java.nio.charset.StandardCharsets;
+import java.security.Signature;
 import java.util.Base64;
 import java.util.UUID;
 
@@ -23,7 +24,6 @@ public class ProfilePage implements HttpDocument {
 
 	@Override
 	public void createContent() {
-		// TODO: ?unsigned=(1|0|true|false)
 		HttpRequestContext ctx = HttpRequestContext.getCurrentContext();
 		String uuid = ctx.getPathParameters().get("uuid");
 		UUID uuidU = UUIDHelper.parseShortUUID(uuid);
@@ -54,11 +54,31 @@ public class ProfilePage implements HttpDocument {
 		textures.put("timestamp", System.currentTimeMillis());
 		textures.put("profileId", UUIDHelper.toShortUUID(UUID.fromString(con.getUserID())));
 		textures.put("profileName", con.getUserName());
-		// TODO: signatureRequired (present with true if ?unsigned=false)
+
+		String unsigned = ctx.getRequestedPath().getQuery().getFirst("unsigned");
+		boolean signed = "false".equals(unsigned) || "0".equals(unsigned);
+		if(signed) {
+			textures.put("signatureRequired", true);
+		}
 
 		UserData d = ShittyAuth.dataStorage.getUserData(con.getUserID());
 		textures.put("textures", TexturesHelper.getTexturesObject(con.getUserID(), d));
-		b.put("value", Base64.getEncoder().encodeToString(textures.toString().getBytes(StandardCharsets.UTF_8)));
+
+		String value = Base64.getEncoder().encodeToString(textures.toString().getBytes(StandardCharsets.UTF_8));
+		b.put("value", value);
+
+		if(signed) {
+			try {
+				Signature sig = Signature.getInstance("SHA1withRSA");
+				sig.initSign(ShittyAuth.privateKey);
+				sig.update(value.getBytes(StandardCharsets.US_ASCII));
+				byte[] sign = sig.sign();
+				b.put("signature", Base64.getEncoder().encodeToString(sign));
+			}catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+
 		a.add(b);
 		obj.put("properties", a);
 

@@ -46,7 +46,7 @@ public class AccountPage extends Page {
 			els.add(Heading.builder()
 				.level(2)
 				.leftboundText()
-				.text(con.getUserName())
+				.text(con.getUserName() + " (" + con.getUserID() + ")")
 				.fullWidth()
 				.create());
 
