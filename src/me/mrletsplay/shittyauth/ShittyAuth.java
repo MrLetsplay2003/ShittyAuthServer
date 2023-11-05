@@ -48,10 +48,8 @@ import me.mrletsplay.shittyauth.user.SQLUserDataStorage;
 import me.mrletsplay.shittyauth.user.UserDataStorage;
 import me.mrletsplay.shittyauth.webinterface.ShittyAuthWIHandler;
 import me.mrletsplay.simplehttpserver.http.HttpRequestMethod;
-import me.mrletsplay.simplehttpserver.http.document.DefaultDocumentProvider;
 import me.mrletsplay.simplehttpserver.http.document.DocumentProvider;
 import me.mrletsplay.simplehttpserver.http.document.FileDocument;
-import me.mrletsplay.simplehttpserver.http.document.HttpDocument;
 import me.mrletsplay.webinterfaceapi.Webinterface;
 import me.mrletsplay.webinterfaceapi.auth.Account;
 import me.mrletsplay.webinterfaceapi.auth.AccountConnection;
@@ -73,17 +71,6 @@ public class ShittyAuth {
 
 	public static void main(String[] args) throws NoSuchAlgorithmException, IOException, InvalidKeySpecException {
 		DefaultSettings.HOME_PAGE_PATH.defaultValue(AccountPage.PATH);
-
-		DocumentProvider proxy = new DefaultDocumentProvider() {
-
-			@Override
-			public HttpDocument get(HttpRequestMethod arg0, String arg1) {
-				System.out.println(arg0 + " " + arg1);
-				return super.get(arg0, arg1);
-			}
-
-		};
-		Webinterface.setDocumentProvider(proxy);
 
 		Webinterface.start();
 		Webinterface.extractResources("/shittyauth-resources.list");
