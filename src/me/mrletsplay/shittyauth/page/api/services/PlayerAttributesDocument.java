@@ -5,6 +5,7 @@ import java.nio.charset.StandardCharsets;
 import me.mrletsplay.mrcore.json.JSONObject;
 import me.mrletsplay.simplehttpserver.http.document.HttpDocument;
 import me.mrletsplay.simplehttpserver.http.request.HttpRequestContext;
+import me.mrletsplay.simplehttpserver.http.util.MimeType;
 
 public class PlayerAttributesDocument implements HttpDocument {
 
@@ -28,7 +29,7 @@ public class PlayerAttributesDocument implements HttpDocument {
 		JSONObject prof = new JSONObject();
 		prof.put("profanityFilterOn", false);
 		obj.put("profanityFilterPreferences", prof);
-		ctx.getServerHeader().setContent("application/json", obj.toString().getBytes(StandardCharsets.UTF_8));
+		ctx.getServerHeader().setContent(MimeType.JSON, obj.toString().getBytes(StandardCharsets.UTF_8));
 	}
 
 }

@@ -19,6 +19,7 @@ import me.mrletsplay.shittyauth.util.CryptoHelper;
 import me.mrletsplay.simplehttpserver.http.HttpStatusCodes;
 import me.mrletsplay.simplehttpserver.http.document.HttpDocument;
 import me.mrletsplay.simplehttpserver.http.request.HttpRequestContext;
+import me.mrletsplay.simplehttpserver.http.util.MimeType;
 
 public class PlayerCertificatesDocument implements HttpDocument {
 
@@ -61,7 +62,7 @@ public class PlayerCertificatesDocument implements HttpDocument {
 		obj.put("refreshedAfter", Instant.now().plus(7, ChronoUnit.DAYS).toString());
 		obj.put("expiresAt", expAt.toString());
 
-		ctx.getServerHeader().setContent("application/json", obj.toString().getBytes(StandardCharsets.UTF_8));
+		ctx.getServerHeader().setContent(MimeType.JSON, obj.toString().getBytes(StandardCharsets.UTF_8));
 	}
 
 	private byte[] getSignaturePayload(UUID playerUUID, Instant expiresAt, PublicKey key) {

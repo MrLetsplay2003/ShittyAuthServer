@@ -10,9 +10,9 @@ public class AuthLibInjectorDocument implements HttpDocument {
 	public void createContent() {
 		HttpRequestContext ctx = HttpRequestContext.getCurrentContext();
 		String page = ctx.getPathParameters().get("page");
-		HttpDocument doc = Webinterface.getDocumentProvider().getDocument("/" + page);
+		HttpDocument doc = Webinterface.getDocumentProvider().get(ctx.getClientHeader().getMethod(), "/" + page);
 		if(doc == null) {
-			Webinterface.getDocumentProvider().get404Document().createContent();
+			Webinterface.getDocumentProvider().getNotFoundDocument().createContent();
 			return;
 		}
 

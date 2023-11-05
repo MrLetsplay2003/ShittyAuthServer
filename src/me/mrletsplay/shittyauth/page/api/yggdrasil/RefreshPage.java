@@ -13,6 +13,7 @@ import me.mrletsplay.simplehttpserver.http.HttpStatusCodes;
 import me.mrletsplay.simplehttpserver.http.document.HttpDocument;
 import me.mrletsplay.simplehttpserver.http.header.DefaultClientContentTypes;
 import me.mrletsplay.simplehttpserver.http.request.HttpRequestContext;
+import me.mrletsplay.simplehttpserver.http.util.MimeType;
 import me.mrletsplay.webinterfaceapi.Webinterface;
 import me.mrletsplay.webinterfaceapi.auth.Account;
 import me.mrletsplay.webinterfaceapi.auth.AccountConnection;
@@ -72,7 +73,7 @@ public class RefreshPage implements HttpDocument {
 			user.put("properties", new JSONArray()); // TODO: Maybe add preferredLanguage?
 		}
 
-		ctx.getServerHeader().setContent("application/json", r.toString().getBytes(StandardCharsets.UTF_8));
+		ctx.getServerHeader().setContent(MimeType.JSON, r.toString().getBytes(StandardCharsets.UTF_8));
 	}
 
 }

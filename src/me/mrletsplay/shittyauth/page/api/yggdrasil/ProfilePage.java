@@ -14,6 +14,7 @@ import me.mrletsplay.shittyauth.util.UUIDHelper;
 import me.mrletsplay.simplehttpserver.http.HttpStatusCodes;
 import me.mrletsplay.simplehttpserver.http.document.HttpDocument;
 import me.mrletsplay.simplehttpserver.http.request.HttpRequestContext;
+import me.mrletsplay.simplehttpserver.http.util.MimeType;
 import me.mrletsplay.webinterfaceapi.Webinterface;
 import me.mrletsplay.webinterfaceapi.auth.Account;
 import me.mrletsplay.webinterfaceapi.auth.AccountConnection;
@@ -28,14 +29,14 @@ public class ProfilePage implements HttpDocument {
 		String uuid = ctx.getPathParameters().get("uuid");
 		UUID uuidU = UUIDHelper.parseShortUUID(uuid);
 		if(uuidU == null) {
-			ctx.getServerHeader().setContent("text/plain", "404 Not Found".getBytes(StandardCharsets.UTF_8));
+			ctx.getServerHeader().setContent(MimeType.TEXT, "404 Not Found".getBytes(StandardCharsets.UTF_8));
 			ctx.getServerHeader().setStatusCode(HttpStatusCodes.NOT_FOUND_404);
 			return;
 		}
 
 		Account acc = Webinterface.getAccountStorage().getAccountByConnectionSpecificID(ShittyAuth.ACCOUNT_CONNECTION_NAME, uuidU.toString());
 		if(acc == null) {
-			ctx.getServerHeader().setContent("text/plain", "404 Not Found".getBytes(StandardCharsets.UTF_8));
+			ctx.getServerHeader().setContent(MimeType.TEXT, "404 Not Found".getBytes(StandardCharsets.UTF_8));
 			ctx.getServerHeader().setStatusCode(HttpStatusCodes.NOT_FOUND_404);
 			return;
 		}
@@ -82,7 +83,7 @@ public class ProfilePage implements HttpDocument {
 		a.add(b);
 		obj.put("properties", a);
 
-		ctx.getServerHeader().setContent("application/json", obj.toString().getBytes(StandardCharsets.UTF_8));
+		ctx.getServerHeader().setContent(MimeType.JSON, obj.toString().getBytes(StandardCharsets.UTF_8));
 	}
 
 }

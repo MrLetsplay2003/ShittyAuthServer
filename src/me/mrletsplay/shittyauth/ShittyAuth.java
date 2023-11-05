@@ -3,6 +3,7 @@ package me.mrletsplay.shittyauth;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.security.KeyFactory;
 import java.security.KeyPair;
@@ -46,6 +47,11 @@ import me.mrletsplay.shittyauth.user.FileUserDataStorage;
 import me.mrletsplay.shittyauth.user.SQLUserDataStorage;
 import me.mrletsplay.shittyauth.user.UserDataStorage;
 import me.mrletsplay.shittyauth.webinterface.ShittyAuthWIHandler;
+import me.mrletsplay.simplehttpserver.http.HttpRequestMethod;
+import me.mrletsplay.simplehttpserver.http.document.DefaultDocumentProvider;
+import me.mrletsplay.simplehttpserver.http.document.DocumentProvider;
+import me.mrletsplay.simplehttpserver.http.document.FileDocument;
+import me.mrletsplay.simplehttpserver.http.document.HttpDocument;
 import me.mrletsplay.webinterfaceapi.Webinterface;
 import me.mrletsplay.webinterfaceapi.auth.Account;
 import me.mrletsplay.webinterfaceapi.auth.AccountConnection;
@@ -67,6 +73,18 @@ public class ShittyAuth {
 
 	public static void main(String[] args) throws NoSuchAlgorithmException, IOException, InvalidKeySpecException {
 		DefaultSettings.HOME_PAGE_PATH.defaultValue(AccountPage.PATH);
+
+		DocumentProvider proxy = new DefaultDocumentProvider() {
+
+			@Override
+			public HttpDocument get(HttpRequestMethod arg0, String arg1) {
+				System.out.println(arg0 + " " + arg1);
+				return super.get(arg0, arg1);
+			}
+
+		};
+		Webinterface.setDocumentProvider(proxy);
+
 		Webinterface.start();
 		Webinterface.extractResources("/shittyauth-resources.list");
 
@@ -107,34 +125,39 @@ public class ShittyAuth {
 		PKCS8EncodedKeySpec privSpec = new PKCS8EncodedKeySpec(Files.readAllBytes(privateKeyFile.toPath()));
 		privateKey = keyFactory.generatePrivate(privSpec);
 
-		Webinterface.getDocumentProvider().registerDocument("/session/minecraft/hasJoined", new HasJoinedPage());
-		Webinterface.getDocumentProvider().registerDocument("/session/minecraft/join", new JoinPage());
-		Webinterface.getDocumentProvider().registerDocumentPattern("/session/minecraft/profile/{uuid}", ProfilePage.INSTANCE);
-		Webinterface.getDocumentProvider().registerDocument("/authenticate", new AuthenticatePage());
-		Webinterface.getDocumentProvider().registerDocument("/validate", new ValidatePage());
-		Webinterface.getDocumentProvider().registerDocument("/invalidate", new InvalidatePage());
-		Webinterface.getDocumentProvider().registerDocument("/signout", new InvalidatePage());
-		Webinterface.getDocumentProvider().registerDocument("/refresh", new RefreshPage());
-		Webinterface.getDocumentProvider().registerDocument("/publickeys", new PublicKeysPage());
+		DocumentProvider provider = Webinterface.getDocumentProvider();
+
+		provider.register(HttpRequestMethod.GET, "/session/minecraft/hasJoined", new HasJoinedPage());
+		provider.register(HttpRequestMethod.POST, "/session/minecraft/join", new JoinPage());
+		provider.registerPattern(HttpRequestMethod.GET, "/session/minecraft/profile/{uuid}", ProfilePage.INSTANCE);
+		provider.register(HttpRequestMethod.POST, "/authenticate", new AuthenticatePage());
+		provider.register(HttpRequestMethod.POST, "/validate", new ValidatePage());
+		provider.register(HttpRequestMethod.POST, "/invalidate", new InvalidatePage());
+		provider.register(HttpRequestMethod.POST, "/signout", new InvalidatePage());
+		provider.register(HttpRequestMethod.POST, "/refresh", new RefreshPage());
+		provider.register(HttpRequestMethod.GET, "/publickeys", new PublicKeysPage());
 
 		PlayerAttributesDocument doc = new PlayerAttributesDocument();
-		Webinterface.getDocumentProvider().registerDocument("/player/attributes", doc);
-		Webinterface.getDocumentProvider().registerDocument("/privileges", doc); // for MC 1.16 or older
-		Webinterface.getDocumentProvider().registerDocument("/player/certificates", new PlayerCertificatesDocument());
-		Webinterface.getDocumentProvider().registerDocument("/player/report", new PlayerReportDocument());
-		Webinterface.getDocumentProvider().registerFileDocument("/yggdrasil_session_pubkey.der", new File("shittyauth/public_key.der"));
+		provider.register(HttpRequestMethod.GET, "/player/attributes", doc);
+		provider.register(HttpRequestMethod.GET, "/privileges", doc); // for MC 1.16 or older
+		provider.register(HttpRequestMethod.GET, "/player/certificates", new PlayerCertificatesDocument());
+		provider.register(HttpRequestMethod.POST, "/player/report", new PlayerReportDocument());
+		provider.register(HttpRequestMethod.GET, "/yggdrasil_session_pubkey.der", new FileDocument(Paths.get("shittyauth/public_key.der")));
 
-		Webinterface.getDocumentProvider().registerDocument("/game/joinserver.jsp", new LegacyJoinServerDocument());
-		Webinterface.getDocumentProvider().registerDocument("/game/checkserver.jsp", new LegacyCheckServerDocument());
-		Webinterface.getDocumentProvider().registerDocumentPattern("/cape/{uuid}", UserCapeDocument.INSTANCE);
-		Webinterface.getDocumentProvider().registerDocumentPattern("/skin/{uuid}", UserSkinDocument.INSTANCE);
-		Webinterface.getDocumentProvider().registerDocumentPattern("/MinecraftSkins/{name}", LegacyUserSkinDocument.INSTANCE);
-		Webinterface.getDocumentProvider().registerDocumentPattern("/MinecraftCapes/{name}", LegacyUserCapeDocument.INSTANCE);
+		provider.register(HttpRequestMethod.GET, "/game/joinserver.jsp", new LegacyJoinServerDocument());
+		provider.register(HttpRequestMethod.GET, "/game/checkserver.jsp", new LegacyCheckServerDocument());
+		provider.registerPattern(HttpRequestMethod.GET, "/cape/{uuid}", UserCapeDocument.INSTANCE);
+		provider.registerPattern(HttpRequestMethod.GET, "/skin/{uuid}", UserSkinDocument.INSTANCE);
+		provider.registerPattern(HttpRequestMethod.GET, "/MinecraftSkins/{name}", LegacyUserSkinDocument.INSTANCE);
+		provider.registerPattern(HttpRequestMethod.GET, "/MinecraftCapes/{name}", LegacyUserCapeDocument.INSTANCE);
 
 		if(ShittyAuth.config.getSetting(ShittyAuthSettings.AUTHLIB_INJECTOR_COMPAT)) {
-			Webinterface.getDocumentProvider().registerDocument("/authserver", new AuthLibInjectorMetadataDocument());
-			Webinterface.getDocumentProvider().registerDocumentPattern("/authserver/{page...}", new AuthLibInjectorDocument());
-			Webinterface.getDocumentProvider().registerDocumentPattern("/skins/MinecraftSkins/{name}", LegacyUserSkinDocument.INSTANCE);
+			provider.register(HttpRequestMethod.GET, "/authserver", new AuthLibInjectorMetadataDocument());
+
+			AuthLibInjectorDocument authlibDoc = new AuthLibInjectorDocument();
+			provider.registerPattern(HttpRequestMethod.GET, "/authserver/{page...}", authlibDoc);
+			provider.registerPattern(HttpRequestMethod.POST, "/authserver/{page...}", authlibDoc);
+			provider.registerPattern(HttpRequestMethod.GET, "/skins/MinecraftSkins/{name}", LegacyUserSkinDocument.INSTANCE);
 		}
 
 		Webinterface.registerActionHandler(new ShittyAuthWIHandler());

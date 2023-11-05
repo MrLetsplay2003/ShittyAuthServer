@@ -8,6 +8,7 @@ import me.mrletsplay.simplehttpserver.http.HttpStatusCodes;
 import me.mrletsplay.simplehttpserver.http.document.HttpDocument;
 import me.mrletsplay.simplehttpserver.http.header.DefaultClientContentTypes;
 import me.mrletsplay.simplehttpserver.http.request.HttpRequestContext;
+import me.mrletsplay.simplehttpserver.http.util.MimeType;
 import me.mrletsplay.webinterfaceapi.Webinterface;
 import me.mrletsplay.webinterfaceapi.auth.Account;
 import me.mrletsplay.webinterfaceapi.auth.AccountConnection;
@@ -26,7 +27,7 @@ public class SignoutPage implements HttpDocument {
 			JSONObject response = new JSONObject();
 			response.put("error", "ForbiddenOperationException");
 			response.put("errorMessage", "Forbidden");
-			ctx.getServerHeader().setContent("application/json", response.toString().getBytes(StandardCharsets.UTF_8));
+			ctx.getServerHeader().setContent(MimeType.JSON, response.toString().getBytes(StandardCharsets.UTF_8));
 			return;
 		}
 
@@ -41,7 +42,7 @@ public class SignoutPage implements HttpDocument {
 			JSONObject response = new JSONObject();
 			response.put("error", "ForbiddenOperationException");
 			response.put("errorMessage", "Invalid credentials. Invalid username or password.");
-			ctx.getServerHeader().setContent("application/json", response.toString().getBytes(StandardCharsets.UTF_8));
+			ctx.getServerHeader().setContent(MimeType.JSON, response.toString().getBytes(StandardCharsets.UTF_8));
 			return;
 		}
 

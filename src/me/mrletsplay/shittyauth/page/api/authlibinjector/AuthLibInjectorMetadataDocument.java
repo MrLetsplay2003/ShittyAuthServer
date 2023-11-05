@@ -9,6 +9,7 @@ import me.mrletsplay.shittyauth.ShittyAuth;
 import me.mrletsplay.shittyauth.util.CryptoHelper;
 import me.mrletsplay.simplehttpserver.http.document.HttpDocument;
 import me.mrletsplay.simplehttpserver.http.request.HttpRequestContext;
+import me.mrletsplay.simplehttpserver.http.util.MimeType;
 import me.mrletsplay.webinterfaceapi.Webinterface;
 import me.mrletsplay.webinterfaceapi.config.DefaultSettings;
 
@@ -39,7 +40,7 @@ public class AuthLibInjectorMetadataDocument implements HttpDocument {
 		obj.put("skinDomains", skinDomains);
 
 		obj.put("signaturePublicKey", CryptoHelper.encodeRSAPublicKey(ShittyAuth.publicKey));
-		ctx.getServerHeader().setContent("application/json", obj.toString().getBytes(StandardCharsets.UTF_8));
+		ctx.getServerHeader().setContent(MimeType.JSON, obj.toString().getBytes(StandardCharsets.UTF_8));
 	}
 
 }

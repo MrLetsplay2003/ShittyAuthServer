@@ -6,6 +6,7 @@ import me.mrletsplay.mrcore.json.JSONObject;
 import me.mrletsplay.simplehttpserver.http.HttpStatusCodes;
 import me.mrletsplay.simplehttpserver.http.document.HttpDocument;
 import me.mrletsplay.simplehttpserver.http.request.HttpRequestContext;
+import me.mrletsplay.simplehttpserver.http.util.MimeType;
 
 public class PlayerReportDocument implements HttpDocument {
 
@@ -15,7 +16,7 @@ public class PlayerReportDocument implements HttpDocument {
 		HttpRequestContext.getCurrentContext().getServerHeader().setStatusCode(HttpStatusCodes.BAD_REQUEST_400);
 		JSONObject error = new JSONObject();
 		error.put("errorMessage", "Chat reporting is not supported by ShittyAuthServer");
-		HttpRequestContext.getCurrentContext().getServerHeader().setContent("text/plain", error.toString().getBytes(StandardCharsets.UTF_8));
+		HttpRequestContext.getCurrentContext().getServerHeader().setContent(MimeType.JSON, error.toString().getBytes(StandardCharsets.UTF_8));
 	}
 
 }

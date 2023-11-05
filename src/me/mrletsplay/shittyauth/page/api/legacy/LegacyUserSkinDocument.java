@@ -9,6 +9,7 @@ import me.mrletsplay.shittyauth.ShittyAuth;
 import me.mrletsplay.simplehttpserver.http.HttpStatusCodes;
 import me.mrletsplay.simplehttpserver.http.document.HttpDocument;
 import me.mrletsplay.simplehttpserver.http.request.HttpRequestContext;
+import me.mrletsplay.simplehttpserver.http.util.MimeType;
 import me.mrletsplay.webinterfaceapi.Webinterface;
 import me.mrletsplay.webinterfaceapi.auth.Account;
 import me.mrletsplay.webinterfaceapi.auth.AccountConnection;
@@ -26,7 +27,7 @@ public class LegacyUserSkinDocument implements HttpDocument {
 		Account acc = ShittyAuth.getAccountByUsername(username);
 		if(acc == null) {
 			ctx.getServerHeader().setStatusCode(HttpStatusCodes.NOT_FOUND_404);
-			ctx.getServerHeader().setContent("text/plain", "404 Not Found".getBytes(StandardCharsets.UTF_8));
+			ctx.getServerHeader().setContent(MimeType.TEXT, "404 Not Found".getBytes(StandardCharsets.UTF_8));
 			return;
 		}
 
@@ -42,7 +43,7 @@ public class LegacyUserSkinDocument implements HttpDocument {
 		} catch (IOException e) {
 			Webinterface.getLogger().error("Failed to load skin", e);
 			ctx.getServerHeader().setStatusCode(HttpStatusCodes.INTERNAL_SERVER_ERROR_500);
-			ctx.getServerHeader().setContent("text/plain", "500 Internal Server error".getBytes(StandardCharsets.UTF_8));
+			ctx.getServerHeader().setContent(MimeType.TEXT, "500 Internal Server error".getBytes(StandardCharsets.UTF_8));
 			return;
 		}
 	}

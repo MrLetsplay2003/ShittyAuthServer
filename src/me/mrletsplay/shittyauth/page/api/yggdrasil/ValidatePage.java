@@ -18,6 +18,7 @@ public class ValidatePage implements HttpDocument {
 			accessToken = obj.getString("accessToken"),
 			clientToken = obj.optString("clientToken").orElse(null);
 
+
 		StoredAccessToken tok = ShittyAuth.tokenStorage.getStoredToken(accessToken);
 		if(tok == null || (clientToken != null && !clientToken.equals(tok.getClientToken()))) {
 			ctx.getServerHeader().setStatusCode(HttpStatusCodes.ACCESS_DENIED_403);
