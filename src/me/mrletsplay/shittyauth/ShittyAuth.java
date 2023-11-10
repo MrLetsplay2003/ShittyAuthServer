@@ -35,6 +35,7 @@ import me.mrletsplay.shittyauth.page.api.legacy.LegacyUserSkinDocument;
 import me.mrletsplay.shittyauth.page.api.services.PlayerAttributesDocument;
 import me.mrletsplay.shittyauth.page.api.services.PlayerCertificatesDocument;
 import me.mrletsplay.shittyauth.page.api.services.PlayerReportDocument;
+import me.mrletsplay.shittyauth.page.api.shittyauth.ShittyAuthAPI;
 import me.mrletsplay.shittyauth.page.api.yggdrasil.AuthenticatePage;
 import me.mrletsplay.shittyauth.page.api.yggdrasil.HasJoinedPage;
 import me.mrletsplay.shittyauth.page.api.yggdrasil.InvalidatePage;
@@ -146,6 +147,8 @@ public class ShittyAuth {
 			provider.registerPattern(HttpRequestMethod.POST, "/authserver/{page...}", authlibDoc);
 			provider.registerPattern(HttpRequestMethod.GET, "/skins/MinecraftSkins/{name}", LegacyUserSkinDocument.INSTANCE);
 		}
+
+		new ShittyAuthAPI().register(provider);
 
 		Webinterface.registerActionHandler(new ShittyAuthWIHandler());
 

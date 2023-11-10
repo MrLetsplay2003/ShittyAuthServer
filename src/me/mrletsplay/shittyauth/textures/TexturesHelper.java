@@ -11,7 +11,7 @@ public class TexturesHelper {
 		SKIN_PATH = "/skin/%s_%s",
 		CAPE_PATH = "/cape/%s_%s";
 
-	private static String getSkinBaseURL() {
+	public static String getSkinBaseURL() {
 		return Webinterface.getConfig().getSetting(DefaultSettings.HTTP_BASE_URL);
 	}
 
