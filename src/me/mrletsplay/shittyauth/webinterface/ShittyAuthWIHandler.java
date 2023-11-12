@@ -26,7 +26,7 @@ import me.mrletsplay.webinterfaceapi.page.element.FileUpload;
 
 public class ShittyAuthWIHandler implements ActionHandler {
 
-	private static final Pattern USERNAME_PATTERN = Pattern.compile("[a-zA-Z0-9_]{3,16}");
+	public static final Pattern USERNAME_PATTERN = Pattern.compile("[a-zA-Z0-9_]{3,16}");
 
 	@WebinterfaceHandler(requestTarget = "shittyauth", requestTypes = "createAccount")
 	public ActionResponse createAccount(ActionEvent event) {

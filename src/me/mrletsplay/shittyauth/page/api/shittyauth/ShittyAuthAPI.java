@@ -5,6 +5,7 @@ import me.mrletsplay.mrcore.json.JSONType;
 import me.mrletsplay.shittyauth.ShittyAuth;
 import me.mrletsplay.shittyauth.textures.TexturesHelper;
 import me.mrletsplay.shittyauth.user.UserData;
+import me.mrletsplay.shittyauth.webinterface.ShittyAuthWIHandler;
 import me.mrletsplay.simplehttpserver.http.HttpRequestMethod;
 import me.mrletsplay.simplehttpserver.http.HttpStatusCodes;
 import me.mrletsplay.simplehttpserver.http.endpoint.Endpoint;
@@ -21,13 +22,24 @@ import me.mrletsplay.webinterfaceapi.session.Session;
 
 public class ShittyAuthAPI implements EndpointCollection {
 
+	private static final JsonObjectValidator LOGIN_VALIDATOR = new JsonObjectValidator()
+		.require("username", JSONType.STRING)
+		.require("password", JSONType.STRING);
+
+	private static final JsonObjectValidator CHANGE_USERNAME_VALIDATOR = new JsonObjectValidator()
+		.require("newUsername", JSONType.STRING);
+
+	private static final JsonObjectValidator CHANGE_PASSWORD_VALIDATOR = new JsonObjectValidator()
+		.require("oldPassword", JSONType.STRING)
+		.require("newPassword", JSONType.STRING);
+
 	private JSONObject error(String message) {
 		JSONObject error = new JSONObject();
 		error.put("error", message);
 		return error;
 	}
 
-	private Account requireShittyAuth(HttpRequestContext ctx) {
+	private Account requireAuthorization(HttpRequestContext ctx) {
 		String sessionID = ctx.getClientHeader().getFields().getFirst("Authorization");
 		if(sessionID == null) {
 			ctx.respond(HttpStatusCodes.ACCESS_DENIED_403, new JsonResponse(error("Unauthorized")));
@@ -60,15 +72,16 @@ public class ShittyAuthAPI implements EndpointCollection {
 		ctx.respond(HttpStatusCodes.OK_200, new JsonResponse(meta));
 	}
 
-	private static final JsonObjectValidator LOGIN_VALIDATOR = new JsonObjectValidator()
-		.require("username", JSONType.STRING)
-		.require("password", JSONType.STRING);
-
 	@Endpoint(method = HttpRequestMethod.POST, path = "/login")
 	public void login() {
 		HttpRequestContext ctx = HttpRequestContext.getCurrentContext();
 
-		JSONObject object = ctx.getClientHeader().getPostData().getParsedAs(DefaultClientContentTypes.JSON_OBJECT);
+		JSONObject object;
+		if((object = ctx.expectContent(DefaultClientContentTypes.JSON_OBJECT)) == null){
+			ctx.respond(HttpStatusCodes.BAD_REQUEST_400, new JsonResponse(error("Bad JSON")));
+			return;
+		}
+
 		ValidationResult result = LOGIN_VALIDATOR.validate(object);
 		if(!result.isOk()) {
 			ctx.respond(HttpStatusCodes.BAD_REQUEST_400, result.asJsonResponse());
@@ -84,7 +97,7 @@ public class ShittyAuthAPI implements EndpointCollection {
 		}
 
 		AccountConnection connection = account.getConnection(ShittyAuth.ACCOUNT_CONNECTION_NAME);
-		if(connection == null || !Webinterface.getCredentialsStorage().checkCredentials(ShittyAuth.ACCOUNT_CONNECTION_NAME, connection.getUserID(), password)) {
+		if(!Webinterface.getCredentialsStorage().checkCredentials(ShittyAuth.ACCOUNT_CONNECTION_NAME, connection.getUserID(), password)) {
 			ctx.respond(HttpStatusCodes.ACCESS_DENIED_403, new JsonResponse(error("Invalid credentials")));
 			return;
 		}
@@ -99,7 +112,7 @@ public class ShittyAuthAPI implements EndpointCollection {
 	public void me() {
 		HttpRequestContext ctx = HttpRequestContext.getCurrentContext();
 
-		Account account = requireShittyAuth(ctx);
+		Account account = requireAuthorization(ctx);
 		if(account == null) return;
 
 		AccountConnection connection = account.getConnection(ShittyAuth.ACCOUNT_CONNECTION_NAME);
@@ -115,7 +128,7 @@ public class ShittyAuthAPI implements EndpointCollection {
 	public void skin() {
 		HttpRequestContext ctx = HttpRequestContext.getCurrentContext();
 
-		Account account = requireShittyAuth(ctx);
+		Account account = requireAuthorization(ctx);
 		if(account == null) return;
 
 		AccountConnection connection = account.getConnection(ShittyAuth.ACCOUNT_CONNECTION_NAME);
@@ -130,29 +143,63 @@ public class ShittyAuthAPI implements EndpointCollection {
 		ctx.respond(HttpStatusCodes.OK_200, new JsonResponse(skinInfo));
 	}
 
-	private static final JsonObjectValidator CHANGE_PASSWORD_VALIDATOR = new JsonObjectValidator()
-		.require("oldPassword", JSONType.STRING)
-		.require("newPassword", JSONType.STRING);
+	@Endpoint(method = HttpRequestMethod.POST, path = "/changeUsername")
+	public void changeUsername() {
+		HttpRequestContext ctx = HttpRequestContext.getCurrentContext();
+
+		JSONObject object;
+		if((object = ctx.expectContent(DefaultClientContentTypes.JSON_OBJECT)) == null){
+			ctx.respond(HttpStatusCodes.BAD_REQUEST_400, new JsonResponse(error("Bad JSON")));
+			return;
+		}
+
+		ValidationResult result = CHANGE_USERNAME_VALIDATOR.validate(object);
+		if(!result.isOk()) {
+			ctx.respond(HttpStatusCodes.BAD_REQUEST_400, result.asJsonResponse());
+			return;
+		}
+
+		Account account = requireAuthorization(ctx);
+		if(account == null) return;
+
+		String newUsername = object.getString("newUsername");
+		if(!ShittyAuthWIHandler.USERNAME_PATTERN.matcher(newUsername).matches()) {
+			ctx.respond(HttpStatusCodes.BAD_REQUEST_400, new JsonResponse(error("Invalid username")));
+			return;
+		}
+
+		AccountConnection connection = account.getConnection(ShittyAuth.ACCOUNT_CONNECTION_NAME);
+		AccountConnection newConnection = new AccountConnection(connection.getConnectionName(), connection.getUserID(), newUsername, connection.getUserEmail(), connection.getUserAvatar());
+		account.removeConnection(connection);
+		account.addConnection(newConnection);
+
+		ctx.respond(HttpStatusCodes.OK_200, new JsonResponse(new JSONObject()));
+	}
 
 	@Endpoint(method = HttpRequestMethod.POST, path = "/changePassword")
 	public void changePassword() {
 		HttpRequestContext ctx = HttpRequestContext.getCurrentContext();
 
-		JSONObject object = ctx.getClientHeader().getPostData().getParsedAs(DefaultClientContentTypes.JSON_OBJECT);
+		JSONObject object;
+		if((object = ctx.expectContent(DefaultClientContentTypes.JSON_OBJECT)) == null){
+			ctx.respond(HttpStatusCodes.BAD_REQUEST_400, new JsonResponse(error("Bad JSON")));
+			return;
+		}
+
 		ValidationResult result = CHANGE_PASSWORD_VALIDATOR.validate(object);
 		if(!result.isOk()) {
 			ctx.respond(HttpStatusCodes.BAD_REQUEST_400, result.asJsonResponse());
 			return;
 		}
 
-		Account account = requireShittyAuth(ctx);
+		Account account = requireAuthorization(ctx);
 		if(account == null) return;
 
 		String oldPassword = object.getString("oldPassword");
 		String newPassword = object.getString("newPassword");
 
 		AccountConnection connection = account.getConnection(ShittyAuth.ACCOUNT_CONNECTION_NAME);
-		if(connection == null || !Webinterface.getCredentialsStorage().checkCredentials(ShittyAuth.ACCOUNT_CONNECTION_NAME, connection.getUserID(), oldPassword)) {
+		if(!Webinterface.getCredentialsStorage().checkCredentials(ShittyAuth.ACCOUNT_CONNECTION_NAME, connection.getUserID(), oldPassword)) {
 			ctx.respond(HttpStatusCodes.ACCESS_DENIED_403, new JsonResponse(error("Invalid credentials")));
 			return;
 		}
