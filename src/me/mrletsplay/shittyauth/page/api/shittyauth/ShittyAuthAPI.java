@@ -3,6 +3,7 @@ package me.mrletsplay.shittyauth.page.api.shittyauth;
 import me.mrletsplay.mrcore.json.JSONObject;
 import me.mrletsplay.mrcore.json.JSONType;
 import me.mrletsplay.shittyauth.ShittyAuth;
+import me.mrletsplay.shittyauth.textures.SkinType;
 import me.mrletsplay.shittyauth.textures.TexturesHelper;
 import me.mrletsplay.shittyauth.user.UserData;
 import me.mrletsplay.shittyauth.webinterface.ShittyAuthWIHandler;
@@ -32,6 +33,10 @@ public class ShittyAuthAPI implements EndpointCollection {
 	private static final JsonObjectValidator CHANGE_PASSWORD_VALIDATOR = new JsonObjectValidator()
 		.require("oldPassword", JSONType.STRING)
 		.require("newPassword", JSONType.STRING);
+
+	private static final JsonObjectValidator UPDATE_SKIN_SETTINGS_VALIDATOR = new JsonObjectValidator()
+		.optional("skinType", JSONType.STRING)
+		.optional("capeEnabled", JSONType.BOOLEAN);
 
 	private JSONObject error(String message) {
 		JSONObject error = new JSONObject();
@@ -205,6 +210,50 @@ public class ShittyAuthAPI implements EndpointCollection {
 		}
 
 		Webinterface.getCredentialsStorage().storeCredentials(ShittyAuth.ACCOUNT_CONNECTION_NAME, connection.getUserID(), newPassword);
+		ctx.respond(HttpStatusCodes.OK_200, new JsonResponse(new JSONObject()));
+	}
+
+	@Endpoint(method = HttpRequestMethod.PUT, path = "/updateSkinSettings")
+	public void updateSkinSettings() {
+		HttpRequestContext ctx = HttpRequestContext.getCurrentContext();
+
+		JSONObject object;
+		if((object = ctx.expectContent(DefaultClientContentTypes.JSON_OBJECT)) == null){
+			ctx.respond(HttpStatusCodes.BAD_REQUEST_400, new JsonResponse(error("Bad JSON")));
+			return;
+		}
+
+		ValidationResult result = UPDATE_SKIN_SETTINGS_VALIDATOR.validate(object);
+		if(!result.isOk()) {
+			ctx.respond(HttpStatusCodes.BAD_REQUEST_400, result.asJsonResponse());
+			return;
+		}
+
+		Account account = requireAuthorization(ctx);
+		if(account == null) return;
+
+		AccountConnection connection = account.getConnection(ShittyAuth.ACCOUNT_CONNECTION_NAME);
+
+		SkinType skinType = null;
+
+		if(object.has("skinType")) {
+			try {
+				skinType = SkinType.valueOf(object.getString("skinType").toUpperCase());
+			}catch(IllegalArgumentException e) {
+				ctx.respond(HttpStatusCodes.BAD_REQUEST_400, new JsonResponse(error("Invalid skin type")));
+				return;
+			}
+		}
+
+		Boolean capeEnabled = object.optBoolean("capeEnabled").orElse(null);
+
+		if(skinType != null || capeEnabled != null) {
+			UserData data = ShittyAuth.dataStorage.getUserData(connection.getUserID());
+			if(skinType != null) data.setSkinType(skinType);
+			if(capeEnabled != null) data.setHasCape(capeEnabled);
+			ShittyAuth.dataStorage.updateUserData(connection.getUserID(), data);
+		}
+
 		ctx.respond(HttpStatusCodes.OK_200, new JsonResponse(new JSONObject()));
 	}
 
