@@ -1,9 +1,7 @@
 package me.mrletsplay.shittyauth.page.api.legacy;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 
 import me.mrletsplay.shittyauth.ShittyAuth;
 import me.mrletsplay.simplehttpserver.http.HttpStatusCodes;
@@ -33,11 +31,8 @@ public class LegacyUserCapeDocument implements HttpDocument {
 
 		AccountConnection con = acc.getConnection(ShittyAuth.ACCOUNT_CONNECTION_NAME);
 
-		File f = new File("shittyauth/capes/", con.getUserID() + ".png");
-		if(!f.exists()) f = new File("include/default_cape.png");
-
 		try {
-			byte[] bytes = Files.readAllBytes(f.toPath());
+			byte[] bytes = ShittyAuth.loadUserCapeRaw(con.getUserID());
 			ctx.getServerHeader().setContent(bytes);
 			ctx.getServerHeader().getFields().set("Content-Type", "image/png");
 		} catch (IOException e) {

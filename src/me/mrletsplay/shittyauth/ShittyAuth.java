@@ -1,8 +1,11 @@
 package me.mrletsplay.shittyauth;
 
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.security.KeyFactory;
@@ -16,6 +19,8 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.imageio.ImageIO;
 
 import me.mrletsplay.shittyauth.auth.AccessTokenStorage;
 import me.mrletsplay.shittyauth.auth.FileAccessTokenStorage;
@@ -62,6 +67,12 @@ import me.mrletsplay.webinterfaceapi.sql.SQLHelper;
 public class ShittyAuth {
 
 	public static final String ACCOUNT_CONNECTION_NAME = "shittyauth";
+
+	private static final Path
+		SKINS_PATH = Paths.get("shittyauth/skins/"),
+		CAPES_PATH = Paths.get("shittyauth/capes/"),
+		DEFAULT_SKIN_PATH = Paths.get("include/default_skin.png"),
+		DEFAULT_CAPE_PATH = Paths.get("include/default_cape.png");
 
 	public static PublicKey publicKey;
 	public static PrivateKey privateKey;
@@ -167,6 +178,28 @@ public class ShittyAuth {
 			}
 		}
 		return null;
+	}
+
+	public static BufferedImage loadUserSkin(String userID) throws IOException {
+		return ImageIO.read(new ByteArrayInputStream(loadUserSkinRaw(userID)));
+	}
+
+	public static byte[] loadUserSkinRaw(String userID) throws IOException {
+		Path skinPath = SKINS_PATH.resolve(userID + ".png");
+		if(!skinPath.normalize().startsWith(SKINS_PATH)) throw new IOException("Invalid path");
+		if(!Files.exists(skinPath)) skinPath = DEFAULT_SKIN_PATH;
+		return Files.readAllBytes(skinPath);
+	}
+
+	public static BufferedImage loadUserCape(String userID) throws IOException {
+		return ImageIO.read(new ByteArrayInputStream(loadUserCapeRaw(userID)));
+	}
+
+	public static byte[] loadUserCapeRaw(String userID) throws IOException {
+		Path capePath = CAPES_PATH.resolve(userID + ".png");
+		if(!capePath.normalize().startsWith(CAPES_PATH)) throw new IOException("Invalid path");
+		if(!Files.exists(capePath)) capePath = DEFAULT_CAPE_PATH;
+		return Files.readAllBytes(capePath);
 	}
 
 }

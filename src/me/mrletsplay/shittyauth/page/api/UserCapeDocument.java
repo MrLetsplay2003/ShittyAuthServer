@@ -1,9 +1,7 @@
 package me.mrletsplay.shittyauth.page.api;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 
 import me.mrletsplay.shittyauth.ShittyAuth;
 import me.mrletsplay.simplehttpserver.http.HttpStatusCodes;
@@ -29,11 +27,8 @@ public class UserCapeDocument implements HttpDocument {
 			return;
 		}
 
-		File f = new File("shittyauth/capes/", accID + ".png");
-		if(!f.exists()) f = new File("include/default_cape.png");
-
 		try {
-			byte[] bytes = Files.readAllBytes(f.toPath());
+			byte[] bytes = ShittyAuth.loadUserCapeRaw(accID);
 			ctx.getServerHeader().setContent(MimeType.PNG, bytes);
 		} catch (IOException e) {
 			Webinterface.getLogger().error("Failed to load cape", e);

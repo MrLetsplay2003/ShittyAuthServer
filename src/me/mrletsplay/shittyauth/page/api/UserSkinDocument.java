@@ -1,9 +1,7 @@
 package me.mrletsplay.shittyauth.page.api;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 
 import me.mrletsplay.shittyauth.ShittyAuth;
 import me.mrletsplay.simplehttpserver.http.HttpStatusCodes;
@@ -29,11 +27,8 @@ public class UserSkinDocument implements HttpDocument {
 			return;
 		}
 
-		File f = new File("shittyauth/skins/", accID + ".png");
-		if(!f.exists()) f = new File("include/default_skin.png");
-
 		try {
-			byte[] bytes = Files.readAllBytes(f.toPath());
+			byte[] bytes = ShittyAuth.loadUserSkinRaw(accID);
 			ctx.getServerHeader().setContent(MimeType.PNG, bytes);
 			ctx.getServerHeader().getFields().set("Content-Type", "image/png");
 		} catch (IOException e) {

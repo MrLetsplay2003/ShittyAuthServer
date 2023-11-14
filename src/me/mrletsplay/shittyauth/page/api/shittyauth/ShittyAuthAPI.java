@@ -1,5 +1,13 @@
 package me.mrletsplay.shittyauth.page.api.shittyauth;
 
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.List;
+
+import javax.imageio.ImageIO;
+
+import me.mrletsplay.mrcore.json.JSONArray;
 import me.mrletsplay.mrcore.json.JSONObject;
 import me.mrletsplay.mrcore.json.JSONType;
 import me.mrletsplay.shittyauth.ShittyAuth;
@@ -11,9 +19,12 @@ import me.mrletsplay.simplehttpserver.http.HttpRequestMethod;
 import me.mrletsplay.simplehttpserver.http.HttpStatusCodes;
 import me.mrletsplay.simplehttpserver.http.endpoint.Endpoint;
 import me.mrletsplay.simplehttpserver.http.endpoint.EndpointCollection;
+import me.mrletsplay.simplehttpserver.http.endpoint.RequestParameter;
 import me.mrletsplay.simplehttpserver.http.header.DefaultClientContentTypes;
 import me.mrletsplay.simplehttpserver.http.request.HttpRequestContext;
+import me.mrletsplay.simplehttpserver.http.response.HttpResponse;
 import me.mrletsplay.simplehttpserver.http.response.JsonResponse;
+import me.mrletsplay.simplehttpserver.http.util.MimeType;
 import me.mrletsplay.simplehttpserver.http.validation.JsonObjectValidator;
 import me.mrletsplay.simplehttpserver.http.validation.result.ValidationResult;
 import me.mrletsplay.webinterfaceapi.Webinterface;
@@ -255,6 +266,70 @@ public class ShittyAuthAPI implements EndpointCollection {
 		}
 
 		ctx.respond(HttpStatusCodes.OK_200, new JsonResponse(new JSONObject()));
+	}
+
+	@Endpoint(method = HttpRequestMethod.GET, path = "/admin/accounts")
+	public void adminAccounts() {
+		HttpRequestContext ctx = HttpRequestContext.getCurrentContext();
+
+		Account account = requireAuthorization(ctx);
+		if(account == null) return;
+
+		if(!account.hasPermission("*")) {
+			ctx.respond(HttpStatusCodes.ACCESS_DENIED_403, new JsonResponse(error("Unauthorized")));
+			return;
+		}
+
+		List<Account> allAccounts = Webinterface.getAccountStorage().getAccounts();
+		JSONArray accounts = new JSONArray();
+		for(Account a : allAccounts) {
+			AccountConnection connection = a.getConnection(ShittyAuth.ACCOUNT_CONNECTION_NAME);
+			if(connection == null) continue;
+
+			JSONObject obj = new JSONObject();
+			obj.put("id", connection.getUserID());
+			obj.put("username", connection.getUserName());
+			obj.put("isAdmin", a.hasPermission("*"));
+			accounts.add(obj);
+		}
+
+		ctx.respond(HttpStatusCodes.OK_200, new JsonResponse(accounts));
+	}
+
+	@Endpoint(method = HttpRequestMethod.GET, path = "/avatar/{userID}", pathPattern = true)
+	public void avatar(@RequestParameter("userID") String userID) {
+		HttpRequestContext ctx = HttpRequestContext.getCurrentContext();
+
+		Account account = Webinterface.getAccountStorage().getAccountByConnectionSpecificID(ShittyAuth.ACCOUNT_CONNECTION_NAME, userID);
+		if(account == null) {
+			ctx.respond(HttpStatusCodes.NOT_FOUND_404, new JsonResponse(error("Account not found")));
+			return;
+		}
+
+		byte[] headBytes;
+		try {
+			BufferedImage skinImage = ShittyAuth.loadUserSkin(userID);
+			BufferedImage headImage = skinImage.getSubimage(8, 8, 8, 8);
+			ByteArrayOutputStream bOut = new ByteArrayOutputStream();
+			ImageIO.write(headImage, "PNG", bOut);
+			headBytes = bOut.toByteArray();
+		} catch (IOException e) {
+			ctx.respond(HttpStatusCodes.INTERNAL_SERVER_ERROR_500, new JsonResponse(error("Failed to load skin")));
+			return;
+		}
+
+		ctx.respond(HttpStatusCodes.OK_200, new HttpResponse() {
+
+			@Override
+			public MimeType getContentType() {
+				return MimeType.PNG;
+			}
+
+			@Override
+			public byte[] getContent() {
+				return headBytes;
+			}
+		});
 	}
 
 	@Override
