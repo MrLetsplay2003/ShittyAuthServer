@@ -340,21 +340,21 @@ public class ShittyAuthAPI implements EndpointCollection {
 		JSONObject res = new JSONObject();
 
 		JSONArray skins = new JSONArray();
-		for(var en : DefaultTexture.getSkins().entrySet()) {
+		for(DefaultTexture t : DefaultTexture.getSkins()) {
 			JSONObject skin = new JSONObject();
-			skin.put("id", en.getValue().name().toLowerCase());
-			skin.put("name", en.getKey());
-			skin.put("url", en.getValue().getURL()); // TODO: provide url on ShittyAuthServer
+			skin.put("id", t.name().toLowerCase());
+			skin.put("name", t.getName());
+			skin.put("url", t.getURL()); // TODO: provide url on ShittyAuthServer
 			skins.add(skin);
 		}
 		res.put("skins", skins);
 
 		JSONArray slimSkins = new JSONArray();
-		for(var en : DefaultTexture.getSlimSkins().entrySet()) {
+		for(DefaultTexture t : DefaultTexture.getSlimSkins()) {
 			JSONObject skin = new JSONObject();
-			skin.put("id", en.getValue().name().toLowerCase());
-			skin.put("name", en.getKey());
-			skin.put("url", en.getValue().getURL()); // TODO: provide url on ShittyAuthServer
+			skin.put("id", t.name().toLowerCase());
+			skin.put("name", t.getName());
+			skin.put("url", t.getURL()); // TODO: provide url on ShittyAuthServer
 			slimSkins.add(skin);
 		}
 		res.put("slimSkins", slimSkins);
@@ -367,11 +367,11 @@ public class ShittyAuthAPI implements EndpointCollection {
 		HttpRequestContext ctx = HttpRequestContext.getCurrentContext();
 
 		JSONArray capes = new JSONArray();
-		for(var en : DefaultTexture.getCapes().entrySet()) {
+		for(DefaultTexture t : DefaultTexture.getCapes()) {
 			JSONObject cape = new JSONObject();
-			cape.put("id", en.getValue().name().toLowerCase());
-			cape.put("name", en.getKey());
-			cape.put("url", en.getValue().getURL()); // TODO: provide url on ShittyAuthServer
+			cape.put("id", t.name().toLowerCase());
+			cape.put("name", t.getName());
+			cape.put("url", t.getURL()); // TODO: provide url on ShittyAuthServer
 			capes.add(cape);
 		}
 
