@@ -22,6 +22,7 @@ import java.util.Map;
 
 import javax.imageio.ImageIO;
 
+import me.mrletsplay.mrcore.http.HttpRequest;
 import me.mrletsplay.shittyauth.auth.AccessTokenStorage;
 import me.mrletsplay.shittyauth.auth.FileAccessTokenStorage;
 import me.mrletsplay.shittyauth.auth.SQLAccessTokenStorage;
@@ -52,6 +53,7 @@ import me.mrletsplay.shittyauth.page.api.yggdrasil.ValidatePage;
 import me.mrletsplay.shittyauth.user.FileUserDataStorage;
 import me.mrletsplay.shittyauth.user.SQLUserDataStorage;
 import me.mrletsplay.shittyauth.user.UserDataStorage;
+import me.mrletsplay.shittyauth.util.DefaultTexture;
 import me.mrletsplay.shittyauth.webinterface.ShittyAuthWIHandler;
 import me.mrletsplay.simplehttpserver.http.HttpRequestMethod;
 import me.mrletsplay.simplehttpserver.http.document.DocumentProvider;
@@ -71,8 +73,8 @@ public class ShittyAuth {
 	private static final Path
 		SKINS_PATH = Paths.get("shittyauth/skins/"),
 		CAPES_PATH = Paths.get("shittyauth/capes/"),
-		DEFAULT_SKIN_PATH = Paths.get("include/default_skin.png"),
-		DEFAULT_CAPE_PATH = Paths.get("include/default_cape.png");
+		DEFAULT_SKIN_PATH = DefaultTexture.SKIN_STEVE.getPath(),
+		DEFAULT_CAPE_PATH = DefaultTexture.CAPE_MIGRATOR.getPath();
 
 	public static PublicKey publicKey;
 	public static PrivateKey privateKey;
@@ -86,6 +88,15 @@ public class ShittyAuth {
 
 		Webinterface.start();
 		Webinterface.extractResources("/shittyauth-resources.list");
+
+		Webinterface.getLogger().info("Downloading default textures");
+		for(DefaultTexture texture : DefaultTexture.values()) {
+			Path path = texture.getPath();
+			if(!Files.exists(path)) {
+				Webinterface.getLogger().info("Downloading " + texture.name());
+				HttpRequest.createGet(texture.getURL()).execute().transferTo(path.toFile());
+			}
+		}
 
 		if(SQLHelper.isAvailable()) {
 			tokenStorage = new SQLAccessTokenStorage();

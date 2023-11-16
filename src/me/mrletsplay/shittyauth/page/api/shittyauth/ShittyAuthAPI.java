@@ -14,6 +14,7 @@ import me.mrletsplay.shittyauth.ShittyAuth;
 import me.mrletsplay.shittyauth.textures.SkinType;
 import me.mrletsplay.shittyauth.textures.TexturesHelper;
 import me.mrletsplay.shittyauth.user.UserData;
+import me.mrletsplay.shittyauth.util.DefaultTexture;
 import me.mrletsplay.shittyauth.webinterface.ShittyAuthWIHandler;
 import me.mrletsplay.simplehttpserver.http.HttpRequestMethod;
 import me.mrletsplay.simplehttpserver.http.HttpStatusCodes;
@@ -330,6 +331,51 @@ public class ShittyAuthAPI implements EndpointCollection {
 				return headBytes;
 			}
 		});
+	}
+
+	@Endpoint(method = HttpRequestMethod.GET, path = "/defaultSkins")
+	public void defaultSkins() {
+		HttpRequestContext ctx = HttpRequestContext.getCurrentContext();
+
+		JSONObject res = new JSONObject();
+
+		JSONArray skins = new JSONArray();
+		for(var en : DefaultTexture.getSkins().entrySet()) {
+			JSONObject skin = new JSONObject();
+			skin.put("id", en.getValue().name().toLowerCase());
+			skin.put("name", en.getKey());
+			skin.put("url", en.getValue().getURL()); // TODO: provide url on ShittyAuthServer
+			skins.add(skin);
+		}
+		res.put("skins", skins);
+
+		JSONArray slimSkins = new JSONArray();
+		for(var en : DefaultTexture.getSlimSkins().entrySet()) {
+			JSONObject skin = new JSONObject();
+			skin.put("id", en.getValue().name().toLowerCase());
+			skin.put("name", en.getKey());
+			skin.put("url", en.getValue().getURL()); // TODO: provide url on ShittyAuthServer
+			slimSkins.add(skin);
+		}
+		res.put("slimSkins", slimSkins);
+
+		ctx.respond(HttpStatusCodes.OK_200, new JsonResponse(res));
+	}
+
+	@Endpoint(method = HttpRequestMethod.GET, path = "/defaultCapes")
+	public void defaultCapes() {
+		HttpRequestContext ctx = HttpRequestContext.getCurrentContext();
+
+		JSONArray capes = new JSONArray();
+		for(var en : DefaultTexture.getCapes().entrySet()) {
+			JSONObject cape = new JSONObject();
+			cape.put("id", en.getValue().name().toLowerCase());
+			cape.put("name", en.getKey());
+			cape.put("url", en.getValue().getURL()); // TODO: provide url on ShittyAuthServer
+			capes.add(cape);
+		}
+
+		ctx.respond(HttpStatusCodes.OK_200, new JsonResponse(capes));
 	}
 
 	@Override

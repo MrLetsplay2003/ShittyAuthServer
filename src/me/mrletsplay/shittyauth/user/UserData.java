@@ -14,8 +14,6 @@ import me.mrletsplay.shittyauth.util.CryptoHelper;
 
 public class UserData implements JSONConvertible {
 
-	public static final String DEFAULT_SKIN = "https://textures.minecraft.net/texture/1a4af718455d4aab528e7a61f86fa25e6a369d1768dcb13f7df319a713eb810b";
-
 	@JSONValue
 	private boolean hasCape;
 
