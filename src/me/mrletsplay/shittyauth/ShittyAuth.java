@@ -4,6 +4,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -52,8 +53,10 @@ import me.mrletsplay.shittyauth.page.api.yggdrasil.RefreshPage;
 import me.mrletsplay.shittyauth.page.api.yggdrasil.ValidatePage;
 import me.mrletsplay.shittyauth.user.FileUserDataStorage;
 import me.mrletsplay.shittyauth.user.SQLUserDataStorage;
+import me.mrletsplay.shittyauth.user.UserData;
 import me.mrletsplay.shittyauth.user.UserDataStorage;
 import me.mrletsplay.shittyauth.util.DefaultTexture;
+import me.mrletsplay.shittyauth.util.InvalidSkinException;
 import me.mrletsplay.shittyauth.webinterface.ShittyAuthWIHandler;
 import me.mrletsplay.simplehttpserver.http.HttpRequestMethod;
 import me.mrletsplay.simplehttpserver.http.document.DocumentProvider;
@@ -191,6 +194,29 @@ public class ShittyAuth {
 		return null;
 	}
 
+	public static void updateUserSkin(String userID, DefaultTexture texture) throws IOException {
+		Path texPath = texture.getPath();
+		try {
+			BufferedImage image = ImageIO.read(texPath.toFile());
+			updateUserSkin(userID, image);
+		}catch(InvalidSkinException ignored) {}
+	}
+
+	public static void updateUserSkin(String userID, BufferedImage image) throws IOException, InvalidSkinException {
+		if(image.getWidth() != 64 || (image.getHeight() != 64 && image.getHeight() != 32)) throw new InvalidSkinException("Skin must be 64x64 or 64x32 pixels");
+		BufferedImage copy = new BufferedImage(64, image.getHeight(), BufferedImage.TYPE_INT_ARGB);
+		copy.createGraphics().drawImage(image, 0, 0, null);
+
+		Path skinPath = SKINS_PATH.resolve(userID + ".png");
+		try(OutputStream out = Files.newOutputStream(skinPath)) {
+			ImageIO.write(copy, "PNG", out);
+		}
+
+		UserData d = ShittyAuth.dataStorage.getUserData(userID);
+		d.setSkinLastChanged(System.currentTimeMillis());
+		ShittyAuth.dataStorage.updateUserData(userID, d);
+	}
+
 	public static BufferedImage loadUserSkin(String userID) throws IOException {
 		return ImageIO.read(new ByteArrayInputStream(loadUserSkinRaw(userID)));
 	}
@@ -200,6 +226,29 @@ public class ShittyAuth {
 		if(!skinPath.normalize().startsWith(SKINS_PATH)) throw new IOException("Invalid path");
 		if(!Files.exists(skinPath)) skinPath = DEFAULT_SKIN_PATH;
 		return Files.readAllBytes(skinPath);
+	}
+
+	public static void updateUserCape(String userID, DefaultTexture texture) throws IOException {
+		Path texPath = texture.getPath();
+		try {
+			BufferedImage image = ImageIO.read(texPath.toFile());
+			updateUserCape(userID, image);
+		}catch(InvalidSkinException ignored) {}
+	}
+
+	public static void updateUserCape(String userID, BufferedImage image) throws IOException, InvalidSkinException{
+		if(image.getWidth() != 64 || image.getHeight() != 32)  throw new InvalidSkinException("Cape must be 64x32");
+		BufferedImage copy = new BufferedImage(64, 32, BufferedImage.TYPE_INT_ARGB);
+		copy.createGraphics().drawImage(image, 0, 0, null);
+
+		Path skinPath = CAPES_PATH.resolve(userID + ".png");
+		try(OutputStream out = Files.newOutputStream(skinPath)) {
+			ImageIO.write(copy, "PNG", out);
+		}
+
+		UserData d = ShittyAuth.dataStorage.getUserData(userID);
+		d.setCapeLastChanged(System.currentTimeMillis());
+		ShittyAuth.dataStorage.updateUserData(userID, d);
 	}
 
 	public static BufferedImage loadUserCape(String userID) throws IOException {

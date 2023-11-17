@@ -2,17 +2,16 @@ package me.mrletsplay.shittyauth.webinterface;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
 import javax.imageio.ImageIO;
 
-import me.mrletsplay.mrcore.io.IOUtils;
 import me.mrletsplay.shittyauth.ShittyAuth;
 import me.mrletsplay.shittyauth.textures.SkinType;
 import me.mrletsplay.shittyauth.user.UserData;
+import me.mrletsplay.shittyauth.util.InvalidSkinException;
 import me.mrletsplay.webinterfaceapi.DefaultPermissions;
 import me.mrletsplay.webinterfaceapi.Webinterface;
 import me.mrletsplay.webinterfaceapi.auth.Account;
@@ -59,18 +58,12 @@ public class ShittyAuthWIHandler implements ActionHandler {
 		try {
 			BufferedImage img = ImageIO.read(new ByteArrayInputStream(skinBytes));
 			if(img == null) return ActionResponse.error("Invalid image file");
-			if(img.getWidth() != 64 || (img.getHeight() != 64 && img.getHeight() != 32)) return ActionResponse.error("Skin must be 64x64 or 64x32 pixels");
-			BufferedImage copy = new BufferedImage(64, img.getHeight(), BufferedImage.TYPE_INT_ARGB);
-			copy.createGraphics().drawImage(img, 0, 0, null);
-			File outFile = new File("shittyauth/skins/" + con.getUserID().toString() + ".png");
-			IOUtils.createFile(outFile);
-			ImageIO.write(copy, "PNG", outFile);
-			UserData d = ShittyAuth.dataStorage.getUserData(con.getUserID());
-			d.setSkinLastChanged(System.currentTimeMillis());
-			ShittyAuth.dataStorage.updateUserData(con.getUserID(), d);
+			ShittyAuth.updateUserSkin(con.getUserID(), img);
 			return ActionResponse.success();
 		}catch(IOException e) {
 			return ActionResponse.error("Invalid skin file");
+		} catch (InvalidSkinException e) {
+			return ActionResponse.error(e.getMessage());
 		}
 	}
 
@@ -84,18 +77,12 @@ public class ShittyAuthWIHandler implements ActionHandler {
 		try {
 			BufferedImage img = ImageIO.read(new ByteArrayInputStream(capeBytes));
 			if(img == null) return ActionResponse.error("Invalid image file");
-			if(img.getWidth() != 64 || img.getHeight() != 32) return ActionResponse.error("Cape must be 64x32");
-			BufferedImage copy = new BufferedImage(64, 32, BufferedImage.TYPE_INT_ARGB);
-			copy.createGraphics().drawImage(img, 0, 0, null);
-			File outFile = new File("shittyauth/capes/" + con.getUserID().toString() + ".png");
-			IOUtils.createFile(outFile);
-			ImageIO.write(copy, "PNG", outFile);
-			UserData d = ShittyAuth.dataStorage.getUserData(con.getUserID());
-			d.setCapeLastChanged(System.currentTimeMillis());
-			ShittyAuth.dataStorage.updateUserData(con.getUserID(), d);
+			ShittyAuth.updateUserCape(con.getUserID(), img);
 			return ActionResponse.success();
 		}catch(IOException e) {
 			return ActionResponse.error("Invalid cape file");
+		} catch (InvalidSkinException e) {
+			return ActionResponse.error(e.getMessage());
 		}
 	}
 

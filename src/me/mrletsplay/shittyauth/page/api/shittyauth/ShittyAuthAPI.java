@@ -1,8 +1,10 @@
 package me.mrletsplay.shittyauth.page.api.shittyauth;
 
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Base64;
 import java.util.List;
 
 import javax.imageio.ImageIO;
@@ -15,6 +17,7 @@ import me.mrletsplay.shittyauth.textures.SkinType;
 import me.mrletsplay.shittyauth.textures.TexturesHelper;
 import me.mrletsplay.shittyauth.user.UserData;
 import me.mrletsplay.shittyauth.util.DefaultTexture;
+import me.mrletsplay.shittyauth.util.InvalidSkinException;
 import me.mrletsplay.shittyauth.webinterface.ShittyAuthWIHandler;
 import me.mrletsplay.simplehttpserver.http.HttpRequestMethod;
 import me.mrletsplay.simplehttpserver.http.HttpStatusCodes;
@@ -49,6 +52,12 @@ public class ShittyAuthAPI implements EndpointCollection {
 	private static final JsonObjectValidator UPDATE_SKIN_SETTINGS_VALIDATOR = new JsonObjectValidator()
 		.optional("skinType", JSONType.STRING)
 		.optional("capeEnabled", JSONType.BOOLEAN);
+
+	private static final JsonObjectValidator CHANGE_RESET_SKIN_VALIDATOR = new JsonObjectValidator()
+		.require("skin", JSONType.STRING);
+
+	private static final JsonObjectValidator CHANGE_RESET_CAPE_VALIDATOR = new JsonObjectValidator()
+		.require("cape", JSONType.STRING);
 
 	private JSONObject error(String message) {
 		JSONObject error = new JSONObject();
@@ -158,6 +167,170 @@ public class ShittyAuthAPI implements EndpointCollection {
 		skinInfo.put("capeURL", String.format(TexturesHelper.getSkinBaseURL() + TexturesHelper.CAPE_PATH, connection.getUserID(), data.getCapeLastChanged()));
 		skinInfo.put("capeEnabled", data.hasCape());
 		ctx.respond(HttpStatusCodes.OK_200, new JsonResponse(skinInfo));
+	}
+
+	@Endpoint(method = HttpRequestMethod.POST, path = "/skin")
+	public void changeSkin() {
+		HttpRequestContext ctx = HttpRequestContext.getCurrentContext();
+
+		JSONObject object;
+		if((object = ctx.expectContent(DefaultClientContentTypes.JSON_OBJECT)) == null){
+			ctx.respond(HttpStatusCodes.BAD_REQUEST_400, new JsonResponse(error("Bad JSON")));
+			return;
+		}
+
+		ValidationResult result = CHANGE_RESET_SKIN_VALIDATOR.validate(object);
+		if(!result.isOk()) {
+			ctx.respond(HttpStatusCodes.BAD_REQUEST_400, result.asJsonResponse());
+			return;
+		}
+
+		Account account = requireAuthorization(ctx);
+		if(account == null) return;
+
+		AccountConnection connection = account.getConnection(ShittyAuth.ACCOUNT_CONNECTION_NAME);
+
+		byte[] skinBytes;
+		try {
+			skinBytes = Base64.getDecoder().decode(object.getString("skin"));
+		}catch(IllegalArgumentException e) {
+			ctx.respond(HttpStatusCodes.BAD_REQUEST_400, new JsonResponse(error("Invalid base64")));
+			return;
+		}
+
+		try {
+			ShittyAuth.updateUserSkin(connection.getUserID(), ImageIO.read(new ByteArrayInputStream(skinBytes)));
+			ctx.respond(HttpStatusCodes.OK_200, new JsonResponse(new JSONObject()));
+		} catch (IOException e) {
+			ctx.respond(HttpStatusCodes.BAD_REQUEST_400, new JsonResponse(error("Invalid skin file")));
+		}catch(InvalidSkinException e) {
+			ctx.respond(HttpStatusCodes.BAD_REQUEST_400, new JsonResponse(error(e.getMessage())));
+		}
+	}
+
+	@Endpoint(method = HttpRequestMethod.POST, path = "/resetSkin")
+	public void resetSkin() {
+		HttpRequestContext ctx = HttpRequestContext.getCurrentContext();
+
+		JSONObject object;
+		if((object = ctx.expectContent(DefaultClientContentTypes.JSON_OBJECT)) == null){
+			ctx.respond(HttpStatusCodes.BAD_REQUEST_400, new JsonResponse(error("Bad JSON")));
+			return;
+		}
+
+		ValidationResult result = CHANGE_RESET_SKIN_VALIDATOR.validate(object);
+		if(!result.isOk()) {
+			ctx.respond(HttpStatusCodes.BAD_REQUEST_400, result.asJsonResponse());
+			return;
+		}
+
+		Account account = requireAuthorization(ctx);
+		if(account == null) return;
+
+		AccountConnection connection = account.getConnection(ShittyAuth.ACCOUNT_CONNECTION_NAME);
+
+		DefaultTexture texture;
+		boolean slim = false;
+		try {
+			texture = DefaultTexture.valueOf(object.getString("skin").toUpperCase());
+			if(!DefaultTexture.getSkins().contains(texture) && !(slim = DefaultTexture.getSlimSkins().contains(texture))) {
+				throw new IllegalArgumentException();
+			}
+		}catch(IllegalArgumentException e) {
+			ctx.respond(HttpStatusCodes.BAD_REQUEST_400, new JsonResponse(error("Not a valid skin")));
+			return;
+		}
+
+		try {
+			ShittyAuth.updateUserSkin(connection.getUserID(), texture);
+			UserData d = ShittyAuth.dataStorage.getUserData(connection.getUserID());
+			d.setSkinType(slim ? SkinType.ALEX : SkinType.STEVE);
+			ShittyAuth.dataStorage.updateUserData(connection.getUserID(), d);
+			ctx.respond(HttpStatusCodes.OK_200, new JsonResponse(new JSONObject()));
+		}catch(IOException e) {
+			ctx.respond(HttpStatusCodes.INTERNAL_SERVER_ERROR_500, new JsonResponse(error("Failed to update skin")));
+			return;
+		}
+	}
+
+	@Endpoint(method = HttpRequestMethod.POST, path = "/cape")
+	public void changeCape() {
+		HttpRequestContext ctx = HttpRequestContext.getCurrentContext();
+
+		JSONObject object;
+		if((object = ctx.expectContent(DefaultClientContentTypes.JSON_OBJECT)) == null){
+			ctx.respond(HttpStatusCodes.BAD_REQUEST_400, new JsonResponse(error("Bad JSON")));
+			return;
+		}
+
+		ValidationResult result = CHANGE_RESET_CAPE_VALIDATOR.validate(object);
+		if(!result.isOk()) {
+			ctx.respond(HttpStatusCodes.BAD_REQUEST_400, result.asJsonResponse());
+			return;
+		}
+
+		Account account = requireAuthorization(ctx);
+		if(account == null) return;
+
+		AccountConnection connection = account.getConnection(ShittyAuth.ACCOUNT_CONNECTION_NAME);
+
+		byte[] skinBytes;
+		try {
+			skinBytes = Base64.getDecoder().decode(object.getString("cape"));
+		}catch(IllegalArgumentException e) {
+			ctx.respond(HttpStatusCodes.BAD_REQUEST_400, new JsonResponse(error("Invalid base64")));
+			return;
+		}
+
+		try {
+			ShittyAuth.updateUserCape(connection.getUserID(), ImageIO.read(new ByteArrayInputStream(skinBytes)));
+			ctx.respond(HttpStatusCodes.OK_200, new JsonResponse(new JSONObject()));
+		} catch (IOException e) {
+			ctx.respond(HttpStatusCodes.BAD_REQUEST_400, new JsonResponse(error("Invalid cape file")));
+		}catch(InvalidSkinException e) {
+			ctx.respond(HttpStatusCodes.BAD_REQUEST_400, new JsonResponse(error(e.getMessage())));
+		}
+	}
+
+	@Endpoint(method = HttpRequestMethod.POST, path = "/resetCape")
+	public void resetCape() {
+		HttpRequestContext ctx = HttpRequestContext.getCurrentContext();
+
+		JSONObject object;
+		if((object = ctx.expectContent(DefaultClientContentTypes.JSON_OBJECT)) == null){
+			ctx.respond(HttpStatusCodes.BAD_REQUEST_400, new JsonResponse(error("Bad JSON")));
+			return;
+		}
+
+		ValidationResult result = CHANGE_RESET_CAPE_VALIDATOR.validate(object);
+		if(!result.isOk()) {
+			ctx.respond(HttpStatusCodes.BAD_REQUEST_400, result.asJsonResponse());
+			return;
+		}
+
+		Account account = requireAuthorization(ctx);
+		if(account == null) return;
+
+		AccountConnection connection = account.getConnection(ShittyAuth.ACCOUNT_CONNECTION_NAME);
+
+		DefaultTexture texture;
+		try {
+			texture = DefaultTexture.valueOf(object.getString("cape").toUpperCase());
+			if(!DefaultTexture.getCapes().contains(texture)) {
+				throw new IllegalArgumentException();
+			}
+		}catch(IllegalArgumentException e) {
+			ctx.respond(HttpStatusCodes.BAD_REQUEST_400, new JsonResponse(error("Not a valid cape")));
+			return;
+		}
+
+		try {
+			ShittyAuth.updateUserCape(connection.getUserID(), texture);
+			ctx.respond(HttpStatusCodes.OK_200, new JsonResponse(new JSONObject()));
+		}catch(IOException e) {
+			ctx.respond(HttpStatusCodes.INTERNAL_SERVER_ERROR_500, new JsonResponse(error("Failed to update cape")));
+			return;
+		}
 	}
 
 	@Endpoint(method = HttpRequestMethod.POST, path = "/changeUsername")
