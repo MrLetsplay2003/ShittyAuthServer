@@ -18,6 +18,7 @@ import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -88,6 +89,9 @@ public class ShittyAuth {
 
 	public static void main(String[] args) throws NoSuchAlgorithmException, IOException, InvalidKeySpecException {
 		DefaultSettings.HOME_PAGE_PATH.defaultValue(AccountPage.PATH);
+		DefaultSettings.CORS_ALLOW_ALL_ORIGINS.defaultValue(true);
+		DefaultSettings.CORS_ALLOWED_HEADERS.defaultValue(Arrays.asList("*"));
+		DefaultSettings.CORS_ALLOW_CREDENTIALS.defaultValue(true);
 
 		Webinterface.start();
 		Webinterface.extractResources("/shittyauth-resources.list");
