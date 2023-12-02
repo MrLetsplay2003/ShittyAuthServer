@@ -44,6 +44,7 @@ import me.mrletsplay.shittyauth.page.api.services.PlayerAttributesDocument;
 import me.mrletsplay.shittyauth.page.api.services.PlayerCertificatesDocument;
 import me.mrletsplay.shittyauth.page.api.services.PlayerReportDocument;
 import me.mrletsplay.shittyauth.page.api.shittyauth.ShittyAuthAPI;
+import me.mrletsplay.shittyauth.page.api.shittyauth.ShittyAuthAdminAPI;
 import me.mrletsplay.shittyauth.page.api.yggdrasil.AuthenticatePage;
 import me.mrletsplay.shittyauth.page.api.yggdrasil.HasJoinedPage;
 import me.mrletsplay.shittyauth.page.api.yggdrasil.InvalidatePage;
@@ -178,6 +179,7 @@ public class ShittyAuth {
 		}
 
 		new ShittyAuthAPI().register(provider);
+		new ShittyAuthAdminAPI().register(provider);
 
 		Webinterface.registerActionHandler(new ShittyAuthWIHandler());
 

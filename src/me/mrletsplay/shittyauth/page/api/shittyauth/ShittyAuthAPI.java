@@ -5,7 +5,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Base64;
-import java.util.List;
 
 import javax.imageio.ImageIO;
 
@@ -59,13 +58,15 @@ public class ShittyAuthAPI implements EndpointCollection {
 	private static final JsonObjectValidator CHANGE_RESET_CAPE_VALIDATOR = new JsonObjectValidator()
 		.require("cape", JSONType.STRING);
 
-	private JSONObject error(String message) {
+	static final JsonResponse EMPTY_RESPONSE = new JsonResponse(new JSONObject());
+
+	static JSONObject error(String message) {
 		JSONObject error = new JSONObject();
 		error.put("error", message);
 		return error;
 	}
 
-	private Account requireAuthorization(HttpRequestContext ctx) {
+	static Account requireAuthorization(HttpRequestContext ctx) {
 		String sessionID = ctx.getClientHeader().getFields().getFirst("Authorization");
 		if(sessionID == null) {
 			ctx.respond(HttpStatusCodes.ACCESS_DENIED_403, new JsonResponse(error("Unauthorized")));
@@ -200,7 +201,7 @@ public class ShittyAuthAPI implements EndpointCollection {
 
 		try {
 			ShittyAuth.updateUserSkin(connection.getUserID(), ImageIO.read(new ByteArrayInputStream(skinBytes)));
-			ctx.respond(HttpStatusCodes.OK_200, new JsonResponse(new JSONObject()));
+			ctx.respond(HttpStatusCodes.OK_200, EMPTY_RESPONSE);
 		} catch (IOException e) {
 			ctx.respond(HttpStatusCodes.BAD_REQUEST_400, new JsonResponse(error("Invalid skin file")));
 		}catch(InvalidSkinException e) {
@@ -246,7 +247,7 @@ public class ShittyAuthAPI implements EndpointCollection {
 			UserData d = ShittyAuth.dataStorage.getUserData(connection.getUserID());
 			d.setSkinType(slim ? SkinType.ALEX : SkinType.STEVE);
 			ShittyAuth.dataStorage.updateUserData(connection.getUserID(), d);
-			ctx.respond(HttpStatusCodes.OK_200, new JsonResponse(new JSONObject()));
+			ctx.respond(HttpStatusCodes.OK_200, EMPTY_RESPONSE);
 		}catch(IOException e) {
 			ctx.respond(HttpStatusCodes.INTERNAL_SERVER_ERROR_500, new JsonResponse(error("Failed to update skin")));
 			return;
@@ -284,7 +285,7 @@ public class ShittyAuthAPI implements EndpointCollection {
 
 		try {
 			ShittyAuth.updateUserCape(connection.getUserID(), ImageIO.read(new ByteArrayInputStream(skinBytes)));
-			ctx.respond(HttpStatusCodes.OK_200, new JsonResponse(new JSONObject()));
+			ctx.respond(HttpStatusCodes.OK_200, EMPTY_RESPONSE);
 		} catch (IOException e) {
 			ctx.respond(HttpStatusCodes.BAD_REQUEST_400, new JsonResponse(error("Invalid cape file")));
 		}catch(InvalidSkinException e) {
@@ -326,7 +327,7 @@ public class ShittyAuthAPI implements EndpointCollection {
 
 		try {
 			ShittyAuth.updateUserCape(connection.getUserID(), texture);
-			ctx.respond(HttpStatusCodes.OK_200, new JsonResponse(new JSONObject()));
+			ctx.respond(HttpStatusCodes.OK_200, EMPTY_RESPONSE);
 		}catch(IOException e) {
 			ctx.respond(HttpStatusCodes.INTERNAL_SERVER_ERROR_500, new JsonResponse(error("Failed to update cape")));
 			return;
@@ -358,12 +359,17 @@ public class ShittyAuthAPI implements EndpointCollection {
 			return;
 		}
 
+		if(ShittyAuth.getAccountByUsername(newUsername) != null) {
+			ctx.respond(HttpStatusCodes.BAD_REQUEST_400, new JsonResponse(error("Username is already taken")));
+			return;
+		}
+
 		AccountConnection connection = account.getConnection(ShittyAuth.ACCOUNT_CONNECTION_NAME);
 		AccountConnection newConnection = new AccountConnection(connection.getConnectionName(), connection.getUserID(), newUsername, connection.getUserEmail(), connection.getUserAvatar());
 		account.removeConnection(connection);
 		account.addConnection(newConnection);
 
-		ctx.respond(HttpStatusCodes.OK_200, new JsonResponse(new JSONObject()));
+		ctx.respond(HttpStatusCodes.OK_200, EMPTY_RESPONSE);
 	}
 
 	@Endpoint(method = HttpRequestMethod.POST, path = "/changePassword")
@@ -388,6 +394,11 @@ public class ShittyAuthAPI implements EndpointCollection {
 		String oldPassword = object.getString("oldPassword");
 		String newPassword = object.getString("newPassword");
 
+		if(newPassword.isEmpty()) {
+			ctx.respond(HttpStatusCodes.BAD_REQUEST_400, new JsonResponse(error("New password can't be empty")));
+			return;
+		}
+
 		AccountConnection connection = account.getConnection(ShittyAuth.ACCOUNT_CONNECTION_NAME);
 		if(!Webinterface.getCredentialsStorage().checkCredentials(ShittyAuth.ACCOUNT_CONNECTION_NAME, connection.getUserID(), oldPassword)) {
 			ctx.respond(HttpStatusCodes.ACCESS_DENIED_403, new JsonResponse(error("Invalid credentials")));
@@ -395,7 +406,7 @@ public class ShittyAuthAPI implements EndpointCollection {
 		}
 
 		Webinterface.getCredentialsStorage().storeCredentials(ShittyAuth.ACCOUNT_CONNECTION_NAME, connection.getUserID(), newPassword);
-		ctx.respond(HttpStatusCodes.OK_200, new JsonResponse(new JSONObject()));
+		ctx.respond(HttpStatusCodes.OK_200, EMPTY_RESPONSE);
 	}
 
 	@Endpoint(method = HttpRequestMethod.PUT, path = "/updateSkinSettings")
@@ -439,35 +450,7 @@ public class ShittyAuthAPI implements EndpointCollection {
 			ShittyAuth.dataStorage.updateUserData(connection.getUserID(), data);
 		}
 
-		ctx.respond(HttpStatusCodes.OK_200, new JsonResponse(new JSONObject()));
-	}
-
-	@Endpoint(method = HttpRequestMethod.GET, path = "/admin/accounts")
-	public void adminAccounts() {
-		HttpRequestContext ctx = HttpRequestContext.getCurrentContext();
-
-		Account account = requireAuthorization(ctx);
-		if(account == null) return;
-
-		if(!account.hasPermission("*")) {
-			ctx.respond(HttpStatusCodes.ACCESS_DENIED_403, new JsonResponse(error("Unauthorized")));
-			return;
-		}
-
-		List<Account> allAccounts = Webinterface.getAccountStorage().getAccounts();
-		JSONArray accounts = new JSONArray();
-		for(Account a : allAccounts) {
-			AccountConnection connection = a.getConnection(ShittyAuth.ACCOUNT_CONNECTION_NAME);
-			if(connection == null) continue;
-
-			JSONObject obj = new JSONObject();
-			obj.put("id", connection.getUserID());
-			obj.put("username", connection.getUserName());
-			obj.put("isAdmin", a.hasPermission("*"));
-			accounts.add(obj);
-		}
-
-		ctx.respond(HttpStatusCodes.OK_200, new JsonResponse(accounts));
+		ctx.respond(HttpStatusCodes.OK_200, EMPTY_RESPONSE);
 	}
 
 	@Endpoint(method = HttpRequestMethod.GET, path = "/avatar/{userID}", pathPattern = true)
