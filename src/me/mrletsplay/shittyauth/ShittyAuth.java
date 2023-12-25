@@ -20,6 +20,7 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.imageio.ImageIO;
@@ -158,7 +159,7 @@ public class ShittyAuth {
 		PlayerAttributesDocument doc = new PlayerAttributesDocument();
 		provider.register(HttpRequestMethod.GET, "/player/attributes", doc);
 		provider.register(HttpRequestMethod.GET, "/privileges", doc); // for MC 1.16 or older
-		provider.register(HttpRequestMethod.GET, "/player/certificates", new PlayerCertificatesDocument());
+		provider.register(HttpRequestMethod.POST, "/player/certificates", new PlayerCertificatesDocument());
 		provider.register(HttpRequestMethod.POST, "/player/report", new PlayerReportDocument());
 		provider.register(HttpRequestMethod.GET, "/yggdrasil_session_pubkey.der", new FileDocument(Paths.get("shittyauth/public_key.der")));
 
@@ -170,12 +171,18 @@ public class ShittyAuth {
 		provider.registerPattern(HttpRequestMethod.GET, "/MinecraftCapes/{name}", LegacyUserCapeDocument.INSTANCE);
 
 		if(ShittyAuth.config.getSetting(ShittyAuthSettings.AUTHLIB_INJECTOR_COMPAT)) {
+			// Provide authlib metadata
 			provider.register(HttpRequestMethod.GET, "/authserver", new AuthLibInjectorMetadataDocument());
 
+			// Redirect all of the authlib mappings to their respective ShittyAuth mappings
+			// See https://github.com/yushijinhun/authlib-injector/blob/961366e012c26849810a744897bf41b2e926b734/src/main/java/moe/yushi/authlibinjector/httpd/DefaultURLRedirector.java#L36
 			AuthLibInjectorDocument authlibDoc = new AuthLibInjectorDocument();
-			provider.registerPattern(HttpRequestMethod.GET, "/authserver/{page...}", authlibDoc);
-			provider.registerPattern(HttpRequestMethod.POST, "/authserver/{page...}", authlibDoc);
-			provider.registerPattern(HttpRequestMethod.GET, "/skins/MinecraftSkins/{name}", LegacyUserSkinDocument.INSTANCE);
+			List<String> authlibPaths = Arrays.asList("/api", "/authserver", "/sessionserver", "/skins", "/minecraftservices");
+			for(String path : authlibPaths) {
+				String p = path + "/{page...}";
+				provider.registerPattern(HttpRequestMethod.GET, p, authlibDoc);
+				provider.registerPattern(HttpRequestMethod.POST, p, authlibDoc);
+			}
 		}
 
 		new ShittyAuthAPI().register(provider);
@@ -213,6 +220,7 @@ public class ShittyAuth {
 		BufferedImage copy = new BufferedImage(64, image.getHeight(), BufferedImage.TYPE_INT_ARGB);
 		copy.createGraphics().drawImage(image, 0, 0, null);
 
+		if(!Files.exists(SKINS_PATH)) Files.createDirectories(SKINS_PATH);
 		Path skinPath = SKINS_PATH.resolve(userID + ".png");
 		try(OutputStream out = Files.newOutputStream(skinPath)) {
 			ImageIO.write(copy, "PNG", out);
@@ -247,6 +255,7 @@ public class ShittyAuth {
 		BufferedImage copy = new BufferedImage(64, 32, BufferedImage.TYPE_INT_ARGB);
 		copy.createGraphics().drawImage(image, 0, 0, null);
 
+		if(!Files.exists(CAPES_PATH)) Files.createDirectories(CAPES_PATH);
 		Path skinPath = CAPES_PATH.resolve(userID + ".png");
 		try(OutputStream out = Files.newOutputStream(skinPath)) {
 			ImageIO.write(copy, "PNG", out);
