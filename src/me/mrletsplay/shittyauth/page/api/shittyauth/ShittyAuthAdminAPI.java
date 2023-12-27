@@ -10,6 +10,7 @@ import me.mrletsplay.mrcore.json.JSONArray;
 import me.mrletsplay.mrcore.json.JSONObject;
 import me.mrletsplay.mrcore.json.JSONType;
 import me.mrletsplay.shittyauth.ShittyAuth;
+import me.mrletsplay.shittyauth.config.ShittyAuthSettings;
 import me.mrletsplay.shittyauth.webinterface.ShittyAuthWIHandler;
 import me.mrletsplay.simplehttpserver.http.HttpRequestMethod;
 import me.mrletsplay.simplehttpserver.http.HttpStatusCodes;
@@ -36,6 +37,9 @@ public class ShittyAuthAdminAPI implements EndpointCollection {
 
 	private static final JsonObjectValidator DELETE_ACCOUNT_VALIDATOR = new JsonObjectValidator()
 		.require("userID", JSONType.STRING);
+
+	private static final JsonObjectValidator GLOBAL_SETTINGS_VALIDATOR = new JsonObjectValidator()
+		.optional("authlibCompat", JSONType.BOOLEAN);
 
 	private static Account requireAdmin(HttpRequestContext ctx) {
 		Account account = requireAuthorization(ctx);
@@ -193,6 +197,46 @@ public class ShittyAuthAdminAPI implements EndpointCollection {
 		}
 
 		Webinterface.getAccountStorage().deleteAccount(otherAccount.getID());
+		ctx.respond(HttpStatusCodes.OK_200, EMPTY_RESPONSE);
+	}
+
+	@Endpoint(method = HttpRequestMethod.GET, path = "/globalSettings")
+	public void globalSettings() {
+		HttpRequestContext ctx = HttpRequestContext.getCurrentContext();
+
+		Account account = requireAdmin(ctx);
+		if(account == null) return;
+
+		JSONObject obj = new JSONObject();
+		obj.put("authlibCompat", ShittyAuth.config.getSetting(ShittyAuthSettings.AUTHLIB_INJECTOR_COMPAT));
+
+		ctx.respond(HttpStatusCodes.OK_200, new JsonResponse(obj));
+	}
+
+	@Endpoint(method = HttpRequestMethod.PATCH, path = "/updateGlobalSettings")
+	public void updateGlobalSettings() {
+		HttpRequestContext ctx = HttpRequestContext.getCurrentContext();
+
+		JSONObject object;
+		if((object = ctx.expectContent(DefaultClientContentTypes.JSON_OBJECT)) == null){
+			ctx.respond(HttpStatusCodes.BAD_REQUEST_400, new JsonResponse(error("Bad JSON")));
+			return;
+		}
+
+		ValidationResult result = GLOBAL_SETTINGS_VALIDATOR.validate(object);
+		if(!result.isOk()) {
+			ctx.respond(HttpStatusCodes.BAD_REQUEST_400, result.asJsonResponse());
+			return;
+		}
+
+		Account account = requireAdmin(ctx);
+		if(account == null) return;
+
+		if(object.has("authlibCompat")) {
+			boolean authlibCompat = object.getBoolean("authlibCompat");
+			ShittyAuth.config.setSetting(ShittyAuthSettings.AUTHLIB_INJECTOR_COMPAT, authlibCompat);
+		}
+
 		ctx.respond(HttpStatusCodes.OK_200, EMPTY_RESPONSE);
 	}
 
