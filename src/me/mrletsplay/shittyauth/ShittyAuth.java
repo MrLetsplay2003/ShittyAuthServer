@@ -31,6 +31,7 @@ import me.mrletsplay.shittyauth.auth.FileAccessTokenStorage;
 import me.mrletsplay.shittyauth.auth.SQLAccessTokenStorage;
 import me.mrletsplay.shittyauth.config.ShittyAuthSettings;
 import me.mrletsplay.shittyauth.page.AccountPage;
+import me.mrletsplay.shittyauth.page.AdminPage;
 import me.mrletsplay.shittyauth.page.CreateAccountPage;
 import me.mrletsplay.shittyauth.page.SettingsPage;
 import me.mrletsplay.shittyauth.page.api.UserCapeDocument;
@@ -193,6 +194,7 @@ public class ShittyAuth {
 		PageCategory cat = Webinterface.createCategory("Minecraft");
 		cat.addPage(new AccountPage());
 		cat.addPage(new CreateAccountPage());
+		cat.addPage(new AdminPage());
 		cat.addPage(new SettingsPage());
 	}
 

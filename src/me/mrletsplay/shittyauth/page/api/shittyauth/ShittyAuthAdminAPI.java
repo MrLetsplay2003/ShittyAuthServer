@@ -1,6 +1,5 @@
 package me.mrletsplay.shittyauth.page.api.shittyauth;
 
-import static me.mrletsplay.shittyauth.page.api.shittyauth.ShittyAuthAPI.EMPTY_RESPONSE;
 import static me.mrletsplay.shittyauth.page.api.shittyauth.ShittyAuthAPI.error;
 import static me.mrletsplay.shittyauth.page.api.shittyauth.ShittyAuthAPI.requireAuthorization;
 
@@ -122,7 +121,7 @@ public class ShittyAuthAdminAPI implements EndpointCollection {
 		otherAccount.removeConnection(connection);
 		otherAccount.addConnection(newConnection);
 
-		ctx.respond(HttpStatusCodes.OK_200, EMPTY_RESPONSE);
+		ctx.respond(HttpStatusCodes.OK_200, JsonResponse.EMPTY_OBJECT);
 	}
 
 	@Endpoint(method = HttpRequestMethod.POST, path = "/changePassword")
@@ -163,7 +162,7 @@ public class ShittyAuthAdminAPI implements EndpointCollection {
 		}
 
 		Webinterface.getCredentialsStorage().storeCredentials(ShittyAuth.ACCOUNT_CONNECTION_NAME, userID, newPassword);
-		ctx.respond(HttpStatusCodes.OK_200, EMPTY_RESPONSE);
+		ctx.respond(HttpStatusCodes.OK_200, JsonResponse.EMPTY_OBJECT);
 	}
 
 	@Endpoint(method = HttpRequestMethod.POST, path = "/deleteAccount")
@@ -197,7 +196,7 @@ public class ShittyAuthAdminAPI implements EndpointCollection {
 		}
 
 		Webinterface.getAccountStorage().deleteAccount(otherAccount.getID());
-		ctx.respond(HttpStatusCodes.OK_200, EMPTY_RESPONSE);
+		ctx.respond(HttpStatusCodes.OK_200, JsonResponse.EMPTY_OBJECT);
 	}
 
 	@Endpoint(method = HttpRequestMethod.GET, path = "/globalSettings")
@@ -237,7 +236,7 @@ public class ShittyAuthAdminAPI implements EndpointCollection {
 			ShittyAuth.config.setSetting(ShittyAuthSettings.AUTHLIB_INJECTOR_COMPAT, authlibCompat);
 		}
 
-		ctx.respond(HttpStatusCodes.OK_200, EMPTY_RESPONSE);
+		ctx.respond(HttpStatusCodes.OK_200, JsonResponse.EMPTY_OBJECT);
 	}
 
 	@Override

@@ -58,8 +58,6 @@ public class ShittyAuthAPI implements EndpointCollection {
 	private static final JsonObjectValidator CHANGE_RESET_CAPE_VALIDATOR = new JsonObjectValidator()
 		.require("cape", JSONType.STRING);
 
-	static final JsonResponse EMPTY_RESPONSE = new JsonResponse(new JSONObject());
-
 	static JSONObject error(String message) {
 		JSONObject error = new JSONObject();
 		error.put("error", message);
@@ -201,7 +199,7 @@ public class ShittyAuthAPI implements EndpointCollection {
 
 		try {
 			ShittyAuth.updateUserSkin(connection.getUserID(), ImageIO.read(new ByteArrayInputStream(skinBytes)));
-			ctx.respond(HttpStatusCodes.OK_200, EMPTY_RESPONSE);
+			ctx.respond(HttpStatusCodes.OK_200, JsonResponse.EMPTY_OBJECT);
 		} catch (IOException e) {
 			ctx.respond(HttpStatusCodes.BAD_REQUEST_400, new JsonResponse(error("Invalid skin file")));
 		}catch(InvalidSkinException e) {
@@ -247,7 +245,7 @@ public class ShittyAuthAPI implements EndpointCollection {
 			UserData d = ShittyAuth.dataStorage.getUserData(connection.getUserID());
 			d.setSkinType(slim ? SkinType.ALEX : SkinType.STEVE);
 			ShittyAuth.dataStorage.updateUserData(connection.getUserID(), d);
-			ctx.respond(HttpStatusCodes.OK_200, EMPTY_RESPONSE);
+			ctx.respond(HttpStatusCodes.OK_200, JsonResponse.EMPTY_OBJECT);
 		}catch(IOException e) {
 			ctx.respond(HttpStatusCodes.INTERNAL_SERVER_ERROR_500, new JsonResponse(error("Failed to update skin")));
 			return;
@@ -285,7 +283,7 @@ public class ShittyAuthAPI implements EndpointCollection {
 
 		try {
 			ShittyAuth.updateUserCape(connection.getUserID(), ImageIO.read(new ByteArrayInputStream(skinBytes)));
-			ctx.respond(HttpStatusCodes.OK_200, EMPTY_RESPONSE);
+			ctx.respond(HttpStatusCodes.OK_200, JsonResponse.EMPTY_OBJECT);
 		} catch (IOException e) {
 			ctx.respond(HttpStatusCodes.BAD_REQUEST_400, new JsonResponse(error("Invalid cape file")));
 		}catch(InvalidSkinException e) {
@@ -327,7 +325,7 @@ public class ShittyAuthAPI implements EndpointCollection {
 
 		try {
 			ShittyAuth.updateUserCape(connection.getUserID(), texture);
-			ctx.respond(HttpStatusCodes.OK_200, EMPTY_RESPONSE);
+			ctx.respond(HttpStatusCodes.OK_200, JsonResponse.EMPTY_OBJECT);
 		}catch(IOException e) {
 			ctx.respond(HttpStatusCodes.INTERNAL_SERVER_ERROR_500, new JsonResponse(error("Failed to update cape")));
 			return;
@@ -369,7 +367,7 @@ public class ShittyAuthAPI implements EndpointCollection {
 		account.removeConnection(connection);
 		account.addConnection(newConnection);
 
-		ctx.respond(HttpStatusCodes.OK_200, EMPTY_RESPONSE);
+		ctx.respond(HttpStatusCodes.OK_200, JsonResponse.EMPTY_OBJECT);
 	}
 
 	@Endpoint(method = HttpRequestMethod.POST, path = "/changePassword")
@@ -406,7 +404,7 @@ public class ShittyAuthAPI implements EndpointCollection {
 		}
 
 		Webinterface.getCredentialsStorage().storeCredentials(ShittyAuth.ACCOUNT_CONNECTION_NAME, connection.getUserID(), newPassword);
-		ctx.respond(HttpStatusCodes.OK_200, EMPTY_RESPONSE);
+		ctx.respond(HttpStatusCodes.OK_200, JsonResponse.EMPTY_OBJECT);
 	}
 
 	@Endpoint(method = HttpRequestMethod.PUT, path = "/updateSkinSettings")
@@ -450,7 +448,7 @@ public class ShittyAuthAPI implements EndpointCollection {
 			ShittyAuth.dataStorage.updateUserData(connection.getUserID(), data);
 		}
 
-		ctx.respond(HttpStatusCodes.OK_200, EMPTY_RESPONSE);
+		ctx.respond(HttpStatusCodes.OK_200, JsonResponse.EMPTY_OBJECT);
 	}
 
 	@Endpoint(method = HttpRequestMethod.GET, path = "/avatar/{userID}", pathPattern = true)

@@ -16,6 +16,7 @@ import me.mrletsplay.webinterfaceapi.DefaultPermissions;
 import me.mrletsplay.webinterfaceapi.Webinterface;
 import me.mrletsplay.webinterfaceapi.auth.Account;
 import me.mrletsplay.webinterfaceapi.auth.AccountConnection;
+import me.mrletsplay.webinterfaceapi.auth.impl.PasswordAuth;
 import me.mrletsplay.webinterfaceapi.page.SettingsPage;
 import me.mrletsplay.webinterfaceapi.page.action.ActionEvent;
 import me.mrletsplay.webinterfaceapi.page.action.ActionHandler;
@@ -123,9 +124,56 @@ public class ShittyAuthWIHandler implements ActionHandler {
 		return ActionResponse.success();
 	}
 
-	@WebinterfaceHandler(requestTarget = "shittyauth", requestTypes = "setSetting")
+	@WebinterfaceHandler(requestTarget = "shittyauth", requestTypes = "changeMCUsername", permission = DefaultPermissions.MODIFY_USERS)
+	public ActionResponse changeMCUsername(ActionEvent event) {
+		String accountID = event.getData().getString("account");
+		String username = event.getData().getString("username");
+
+		Account account = Webinterface.getAccountStorage().getAccountByID(accountID);
+		if(account == null) return ActionResponse.error("Account doesn't exist");
+
+		AccountConnection connection = account.getConnection(ShittyAuth.ACCOUNT_CONNECTION_NAME);
+		if(connection == null) return ActionResponse.error("No Minecraft account");
+
+		AccountConnection newConnection = new AccountConnection(connection.getConnectionName(), connection.getUserID(), username, connection.getUserEmail(), connection.getUserAvatar());
+		account.removeConnection(connection);
+		account.addConnection(newConnection);
+
+		return ActionResponse.success();
+	}
+
+	@WebinterfaceHandler(requestTarget = "shittyauth", requestTypes = "changeMCPassword", permission = DefaultPermissions.MODIFY_USERS)
+	public ActionResponse changeMCPassword(ActionEvent event) {
+		String accountID = event.getData().getString("account");
+		String password = event.getData().getString("password");
+
+		Account account = Webinterface.getAccountStorage().getAccountByID(accountID);
+		if(account == null) return ActionResponse.error("Account doesn't exist");
+
+		AccountConnection connection = account.getConnection(ShittyAuth.ACCOUNT_CONNECTION_NAME);
+		if(connection == null) return ActionResponse.error("No Minecraft account");
+
+		Webinterface.getCredentialsStorage().storeCredentials(ShittyAuth.ACCOUNT_CONNECTION_NAME, connection.getUserID(), password);
+		return ActionResponse.success();
+	}
+
+	@WebinterfaceHandler(requestTarget = "shittyauth", requestTypes = "changeWIAPIPassword", permission = DefaultPermissions.MODIFY_USERS)
+	public ActionResponse changeWIAPIPassword(ActionEvent event) {
+		String accountID = event.getData().getString("account");
+		String password = event.getData().getString("password");
+
+		Account account = Webinterface.getAccountStorage().getAccountByID(accountID);
+		if(account == null) return ActionResponse.error("Account doesn't exist");
+
+		AccountConnection connection = account.getConnection(PasswordAuth.ID);
+		if(connection == null) return ActionResponse.error("Not a password-based account");
+
+		Webinterface.getCredentialsStorage().storeCredentials(PasswordAuth.ID, connection.getUserID(), password);
+		return ActionResponse.success();
+	}
+
+	@WebinterfaceHandler(requestTarget = "shittyauth", requestTypes = "setSetting", permission = DefaultPermissions.SETTINGS)
 	public ActionResponse setSetting(ActionEvent event) {
-		if(!event.getAccount().hasPermission(DefaultPermissions.SETTINGS)) return ActionResponse.error("No permission");
 		return SettingsPage.handleSetSettingRequest(ShittyAuth.config, event);
 	}
 
