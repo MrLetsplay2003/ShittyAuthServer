@@ -12,11 +12,13 @@ import me.mrletsplay.mrcore.json.JSONArray;
 import me.mrletsplay.mrcore.json.JSONObject;
 import me.mrletsplay.mrcore.json.JSONType;
 import me.mrletsplay.shittyauth.ShittyAuth;
+import me.mrletsplay.shittyauth.config.ShittyAuthSettings;
 import me.mrletsplay.shittyauth.textures.SkinType;
 import me.mrletsplay.shittyauth.textures.TexturesHelper;
 import me.mrletsplay.shittyauth.user.UserData;
 import me.mrletsplay.shittyauth.util.DefaultTexture;
 import me.mrletsplay.shittyauth.util.InvalidSkinException;
+import me.mrletsplay.shittyauth.util.InvalidUsernameException;
 import me.mrletsplay.shittyauth.webinterface.ShittyAuthWIHandler;
 import me.mrletsplay.simplehttpserver.http.HttpRequestMethod;
 import me.mrletsplay.simplehttpserver.http.HttpStatusCodes;
@@ -131,6 +133,44 @@ public class ShittyAuthAPI implements EndpointCollection {
 		JSONObject response = new JSONObject();
 		response.put("token", session.getSessionID());
 		ctx.respond(HttpStatusCodes.OK_200, new JsonResponse(response));
+	}
+
+	@Endpoint(method = HttpRequestMethod.POST, path = "/register")
+	public void register() {
+		HttpRequestContext ctx = HttpRequestContext.getCurrentContext();
+
+		if(ShittyAuth.config.getSetting(ShittyAuthSettings.ALLOW_REGISTRATION)) {
+			ctx.respond(HttpStatusCodes.ACCESS_DENIED_403, new JsonResponse(error("Creation of Minecraft accounts disabled")));
+		}
+
+		JSONObject object;
+		if((object = ctx.expectContent(DefaultClientContentTypes.JSON_OBJECT)) == null){
+			ctx.respond(HttpStatusCodes.BAD_REQUEST_400, new JsonResponse(error("Bad JSON")));
+			return;
+		}
+
+		ValidationResult result = LOGIN_VALIDATOR.validate(object);
+		if(!result.isOk()) {
+			ctx.respond(HttpStatusCodes.BAD_REQUEST_400, result.asJsonResponse());
+			return;
+		}
+
+		String username = object.getString("username");
+		String password = object.getString("password");
+		if(ShittyAuth.getAccountByUsername(username) != null) {
+			ctx.respond(HttpStatusCodes.ACCESS_DENIED_403, new JsonResponse(error("A user with that username already exists")));
+			return;
+		}
+
+		try {
+			Account account = ShittyAuth.createAccount(username, password);
+			Session session = Session.startSession(account);
+			JSONObject response = new JSONObject();
+			response.put("token", session.getSessionID());
+			ctx.respond(HttpStatusCodes.OK_200, new JsonResponse(response));
+		} catch (InvalidUsernameException e) {
+			ctx.respond(HttpStatusCodes.BAD_REQUEST_400, new JsonResponse(error("Invalid username")));
+		}
 	}
 
 	@Endpoint(method = HttpRequestMethod.GET, path = "/me")

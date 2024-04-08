@@ -9,6 +9,7 @@ import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
 
 import me.mrletsplay.shittyauth.ShittyAuth;
+import me.mrletsplay.shittyauth.config.ShittyAuthSettings;
 import me.mrletsplay.shittyauth.textures.SkinType;
 import me.mrletsplay.shittyauth.user.UserData;
 import me.mrletsplay.shittyauth.util.InvalidSkinException;
@@ -30,6 +31,8 @@ public class ShittyAuthWIHandler implements ActionHandler {
 
 	@WebinterfaceHandler(requestTarget = "shittyauth", requestTypes = "createAccount")
 	public ActionResponse createAccount(ActionEvent event) {
+		if(ShittyAuth.config.getSetting(ShittyAuthSettings.ALLOW_REGISTRATION)) return ActionResponse.error("Creation of Minecraft accounts disabled");
+
 		Account acc = event.getAccount();
 		if(acc.getConnection(ShittyAuth.ACCOUNT_CONNECTION_NAME) != null) return ActionResponse.error("Account already has a Minecraft account");
 

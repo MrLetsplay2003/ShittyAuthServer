@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import javax.imageio.ImageIO;
 
@@ -61,6 +62,7 @@ import me.mrletsplay.shittyauth.user.UserData;
 import me.mrletsplay.shittyauth.user.UserDataStorage;
 import me.mrletsplay.shittyauth.util.DefaultTexture;
 import me.mrletsplay.shittyauth.util.InvalidSkinException;
+import me.mrletsplay.shittyauth.util.InvalidUsernameException;
 import me.mrletsplay.shittyauth.webinterface.ShittyAuthWIHandler;
 import me.mrletsplay.simplehttpserver.http.HttpRequestMethod;
 import me.mrletsplay.simplehttpserver.http.document.DocumentProvider;
@@ -71,6 +73,7 @@ import me.mrletsplay.webinterfaceapi.auth.AccountConnection;
 import me.mrletsplay.webinterfaceapi.config.DefaultSettings;
 import me.mrletsplay.webinterfaceapi.config.FileConfig;
 import me.mrletsplay.webinterfaceapi.page.PageCategory;
+import me.mrletsplay.webinterfaceapi.setup.Setup;
 import me.mrletsplay.webinterfaceapi.sql.SQLHelper;
 
 public class ShittyAuth {
@@ -95,6 +98,17 @@ public class ShittyAuth {
 		DefaultSettings.CORS_ALLOW_ALL_ORIGINS.defaultValue(true);
 		DefaultSettings.CORS_ALLOWED_HEADERS.defaultValue(Arrays.asList("*"));
 		DefaultSettings.CORS_ALLOW_CREDENTIALS.defaultValue(true);
+		DefaultSettings.ALLOW_ANONYMOUS.defaultValue(false);
+
+		if(!Webinterface.getSetup().isDone() && "true".equals(System.getenv("SHITTYAUTH_SKIP_SETUP"))) {
+			Webinterface.getLogger().info("Skipping setup");
+
+			Setup setup = Webinterface.getSetup();
+			setup.getSteps().forEach(s -> {
+				if(setup.isStepDone(s.getID())) return;
+				setup.addCompletedStep(s.getID());
+			});
+		}
 
 		Webinterface.start();
 		Webinterface.extractResources("/shittyauth-resources.list");
@@ -191,11 +205,43 @@ public class ShittyAuth {
 
 		Webinterface.registerActionHandler(new ShittyAuthWIHandler());
 
+		initFromEnvvars();
+
 		PageCategory cat = Webinterface.createCategory("Minecraft");
 		cat.addPage(new AccountPage());
 		cat.addPage(new CreateAccountPage());
 		cat.addPage(new AdminPage());
 		cat.addPage(new SettingsPage());
+	}
+
+	private static void initFromEnvvars() {
+		String adminUser = System.getenv("SHITTYAUTH_ADMIN_USER");
+		String adminPass = System.getenv("SHITTYAUTH_ADMIN_PASSWORD");
+		if(adminUser != null && adminPass != null) {
+			Webinterface.getLogger().info("Creating admin user");
+
+			Account acc = getAccountByUsername(adminUser);
+			if(acc != null) {
+				Webinterface.getLogger().info("Account with username '" + adminUser + "' already exists. Skipping");
+			}else {
+				try {
+					createAccount(adminUser, adminPass);
+				} catch (InvalidUsernameException e) {
+					Webinterface.getLogger().error("Failed to create account", e);
+				}
+			}
+		}
+	}
+
+	public static Account createAccount(String username, String password) throws InvalidUsernameException {
+		if(!ShittyAuthWIHandler.USERNAME_PATTERN.matcher(username).matches()) throw new InvalidUsernameException("Invalid username");
+
+		String uuid = UUID.randomUUID().toString();
+		AccountConnection conn = new AccountConnection(ACCOUNT_CONNECTION_NAME, uuid, username, null, null);
+		Account acc = Webinterface.getAccountStorage().createAccount(conn);
+		Webinterface.getCredentialsStorage().storeCredentials(ACCOUNT_CONNECTION_NAME, uuid, password);
+		ShittyAuth.dataStorage.updateUserData(uuid, UserData.createNew());
+		return acc;
 	}
 
 	public static Account getAccountByUsername(String username) {

@@ -38,6 +38,7 @@ public class ShittyAuthAdminAPI implements EndpointCollection {
 		.require("userID", JSONType.STRING);
 
 	private static final JsonObjectValidator GLOBAL_SETTINGS_VALIDATOR = new JsonObjectValidator()
+		.optional("allowRegistration", JSONType.BOOLEAN)
 		.optional("authlibCompat", JSONType.BOOLEAN);
 
 	private static Account requireAdmin(HttpRequestContext ctx) {
@@ -207,6 +208,7 @@ public class ShittyAuthAdminAPI implements EndpointCollection {
 		if(account == null) return;
 
 		JSONObject obj = new JSONObject();
+		obj.put("allowRegistration", ShittyAuth.config.getSetting(ShittyAuthSettings.ALLOW_REGISTRATION));
 		obj.put("authlibCompat", ShittyAuth.config.getSetting(ShittyAuthSettings.AUTHLIB_INJECTOR_COMPAT));
 
 		ctx.respond(HttpStatusCodes.OK_200, new JsonResponse(obj));
@@ -230,6 +232,11 @@ public class ShittyAuthAdminAPI implements EndpointCollection {
 
 		Account account = requireAdmin(ctx);
 		if(account == null) return;
+
+		if(object.has("allowRegistration")) {
+			boolean allowRegistration = object.getBoolean("allowRegistration");
+			ShittyAuth.config.setSetting(ShittyAuthSettings.ALLOW_REGISTRATION, allowRegistration);
+		}
 
 		if(object.has("authlibCompat")) {
 			boolean authlibCompat = object.getBoolean("authlibCompat");
