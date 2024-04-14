@@ -1,0 +1,4 @@
+RewriteEngine On
+RewriteCond %{REQUEST_URI} !^/server
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^(.*)$ /server/$1 [P,QSA,L]

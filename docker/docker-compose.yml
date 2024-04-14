@@ -1,0 +1,20 @@
+services:
+  server:
+    image: mrletsplay/shittyauth
+    environment:
+      - "UID=1000"
+      - "GID=1000"
+      - "SHITTYAUTH_SKIP_SETUP=true"
+      - "SHITTYAUTH_ADMIN_USER=admin"
+      - "SHITTYAUTH_ADMIN_PASSWORD=admin"
+    volumes:
+      - "./shittyauth/:/shittyauth/data"
+  frontend:
+    image: mrletsplay/shittyauth_frontend
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./frontend/config.json:/usr/local/apache2/htdocs/config.json
+      - ./frontend/httpd.conf:/usr/local/apache2/conf/extra/include-shittyauth.conf
+      - ./frontend/.htaccess:/usr/local/apache2/htdocs/.htaccess
