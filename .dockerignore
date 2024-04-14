@@ -7,4 +7,7 @@ dependency-reduced-pom.xml
 /include/
 /logs/
 /shittyauth/
-/docker/shittyauth/
+
+/docker/frontend
+/docker/docker-compose.yml
+/docker/Dockerfile

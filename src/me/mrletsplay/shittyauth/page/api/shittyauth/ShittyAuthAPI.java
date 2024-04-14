@@ -139,8 +139,9 @@ public class ShittyAuthAPI implements EndpointCollection {
 	public void register() {
 		HttpRequestContext ctx = HttpRequestContext.getCurrentContext();
 
-		if(ShittyAuth.config.getSetting(ShittyAuthSettings.ALLOW_REGISTRATION)) {
+		if(!ShittyAuth.config.getSetting(ShittyAuthSettings.ALLOW_REGISTRATION)) {
 			ctx.respond(HttpStatusCodes.ACCESS_DENIED_403, new JsonResponse(error("Creation of Minecraft accounts disabled")));
+			return;
 		}
 
 		JSONObject object;

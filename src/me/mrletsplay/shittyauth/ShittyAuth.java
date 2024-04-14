@@ -225,7 +225,8 @@ public class ShittyAuth {
 				Webinterface.getLogger().info("Account with username '" + adminUser + "' already exists. Skipping");
 			}else {
 				try {
-					createAccount(adminUser, adminPass);
+					acc = createAccount(adminUser, adminPass);
+					acc.addPermission("*");
 				} catch (InvalidUsernameException e) {
 					Webinterface.getLogger().error("Failed to create account", e);
 				}
