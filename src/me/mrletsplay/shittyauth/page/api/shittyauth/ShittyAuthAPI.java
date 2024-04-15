@@ -68,12 +68,12 @@ public class ShittyAuthAPI implements EndpointCollection {
 
 	static Account requireAuthorization(HttpRequestContext ctx) {
 		String sessionID = ctx.getClientHeader().getFields().getFirst("Authorization");
-		if(sessionID == null) {
+		if(sessionID == null || !sessionID.startsWith("Bearer ")) {
 			ctx.respond(HttpStatusCodes.ACCESS_DENIED_403, new JsonResponse(error("Unauthorized")));
 			return null;
 		}
 
-		Session session = Session.getSession(sessionID);
+		Session session = Session.getSession(sessionID.substring("Bearer ".length()));
 		if(session == null) {
 			ctx.respond(HttpStatusCodes.ACCESS_DENIED_403, new JsonResponse(error("Unauthorized")));
 			return null;

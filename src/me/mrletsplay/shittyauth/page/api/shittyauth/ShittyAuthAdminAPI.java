@@ -37,6 +37,10 @@ public class ShittyAuthAdminAPI implements EndpointCollection {
 	private static final JsonObjectValidator DELETE_ACCOUNT_VALIDATOR = new JsonObjectValidator()
 		.require("userID", JSONType.STRING);
 
+	private static final JsonObjectValidator CHANGE_ADMIN_VALIDATOR = new JsonObjectValidator()
+		.require("userID", JSONType.STRING)
+		.require("admin", JSONType.BOOLEAN);
+
 	private static final JsonObjectValidator GLOBAL_SETTINGS_VALIDATOR = new JsonObjectValidator()
 		.optional("allowRegistration", JSONType.BOOLEAN)
 		.optional("authlibCompat", JSONType.BOOLEAN);
@@ -197,6 +201,46 @@ public class ShittyAuthAdminAPI implements EndpointCollection {
 		}
 
 		Webinterface.getAccountStorage().deleteAccount(otherAccount.getID());
+		ctx.respond(HttpStatusCodes.OK_200, JsonResponse.EMPTY_OBJECT);
+	}
+
+	@Endpoint(method = HttpRequestMethod.POST, path = "/changeAdmin")
+	public void changeAdmin() {
+		HttpRequestContext ctx = HttpRequestContext.getCurrentContext();
+
+		JSONObject object;
+		if((object = ctx.expectContent(DefaultClientContentTypes.JSON_OBJECT)) == null){
+			ctx.respond(HttpStatusCodes.BAD_REQUEST_400, new JsonResponse(error("Bad JSON")));
+			return;
+		}
+
+		ValidationResult result = CHANGE_ADMIN_VALIDATOR.validate(object);
+		if(!result.isOk()) {
+			ctx.respond(HttpStatusCodes.BAD_REQUEST_400, result.asJsonResponse());
+			return;
+		}
+
+		Account account = requireAdmin(ctx);
+		if(account == null) return;
+
+		Account otherAccount = Webinterface.getAccountStorage().getAccountByConnectionSpecificID(ShittyAuth.ACCOUNT_CONNECTION_NAME, object.getString("userID"));
+		if(otherAccount == null) {
+			ctx.respond(HttpStatusCodes.BAD_REQUEST_400, new JsonResponse(error("Account doesn't exist")));
+			return;
+		}
+
+		if(account.getID().equals(otherAccount.getID())) {
+			ctx.respond(HttpStatusCodes.BAD_REQUEST_400, new JsonResponse(error("Can't edit own account via admin API")));
+			return;
+		}
+
+		boolean admin = object.getBoolean("admin");
+		if(admin) {
+			if(!otherAccount.hasPermission("*")) otherAccount.addPermission("*");
+		}else {
+			otherAccount.removePermission("*");
+		}
+
 		ctx.respond(HttpStatusCodes.OK_200, JsonResponse.EMPTY_OBJECT);
 	}
 
