@@ -59,6 +59,8 @@ public enum DefaultTexture {
 
 	CAPE_MIGRATOR("Migrator", "2340c0e03dd24a11b15a8b33c2a7e9e32abb2051b2481d0ba7defd635ca7a933"),
 	CAPE_VANILLA("Vanilla", "f9a76537647989f9a0b6d001e320dac591c359e9e61a31f4ce11c88f207f0ad4"),
+
+	CAPE_15_YEAR_ANNIVERSARY("15 Year Anniversary", "cd9d82ab17fd92022dbd4a86cde4c382a7540e117fae7b9a2853658505a80625"),
 	;
 
 	public static final String TEXTURE_URL = "https://textures.minecraft.net/texture/%s";
