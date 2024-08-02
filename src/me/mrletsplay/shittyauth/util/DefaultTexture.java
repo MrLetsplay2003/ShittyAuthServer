@@ -41,13 +41,13 @@ public enum DefaultTexture {
 	CAPE_MINECON_2016("MINECON 2016", "e7dfea16dc83c97df01a12fabbd1216359c0cd0ea42f9999b6e97c584963e980"),
 
 	CAPE_MILLIONTH_SALE("Millionth Customer", "70efffaf86fe5bc089608d3cb297d3e276b9eb7a8f9f2fe6659c23a2d8b18edf"),
-	CAPE_DANNYBSTYLE("dannyBstyle", "bcfbe84c6542a4a5c213c1cacf8979b5e913dcb4ad783a8b80e3c4a7d5c8bdac"),
-	CAPE_JULIANCLARK("JulianClark", "23ec737f18bfe4b547c95935fc297dd767bb84ee55bfd855144d279ac9bfd9fe"),
-	CAPE_CHEAPSH0T("cheapsh0t", "ca29f5dd9e94fb1748203b92e36b66fda80750c87ebc18d6eafdb0e28cc1d05f"),
-	CAPE_MRMESSIAH("MrMessiah", "2e002d5e1758e79ba51d08d92a0f3a95119f2f435ae7704916507b6c565a7da8"),
-	CAPE_PRISMARINE("Prismarine", "d8f8d13a1adf9636a16c31d47f3ecc9bb8d8533108aa5ad2a01b13b1a0c55eac"),
-	CAPE_BIRTHDAY("Birthday", "2056f2eebd759cce93460907186ef44e9192954ae12b227d817eb4b55627a7fc"),
-	// CAPE_VALENTINE
+	CAPE_DANNYBSTYLE("dB (dannyBstyle)", "bcfbe84c6542a4a5c213c1cacf8979b5e913dcb4ad783a8b80e3c4a7d5c8bdac"),
+	CAPE_JULIANCLARK("Snowman (JulianClark)", "23ec737f18bfe4b547c95935fc297dd767bb84ee55bfd855144d279ac9bfd9fe"),
+	CAPE_CHEAPSH0T("Japanese Translator (cheapsh0t)", "ca29f5dd9e94fb1748203b92e36b66fda80750c87ebc18d6eafdb0e28cc1d05f"),
+	CAPE_MRMESSIAH("Spade (MrMessiah)", "2e002d5e1758e79ba51d08d92a0f3a95119f2f435ae7704916507b6c565a7da8"),
+	CAPE_PRISMARINE("Prismarine (Drullkus)", "d8f8d13a1adf9636a16c31d47f3ecc9bb8d8533108aa5ad2a01b13b1a0c55eac"),
+	CAPE_BIRTHDAY("Birthday (Gr8Bizzo)", "2056f2eebd759cce93460907186ef44e9192954ae12b227d817eb4b55627a7fc"),
+	CAPE_VALENTINE("Valentine", "6a7cf0eb5cfe7e7c508b364e32916dfd28d164e7bf6d92c6ea7811b82451e760"),
 
 	CAPE_TRANSLATOR("Translator", "1bf91499701404e21bd46b0191d63239a4ef76ebde88d27e4d430ac211df681e"),
 	CAPE_TRANSLATOR_CHINESE("Chinese Translator", "2262fb1d24912209490586ecae98aca8500df3eff91f2a07da37ee524e7e3cb6"),
@@ -61,6 +61,35 @@ public enum DefaultTexture {
 	CAPE_VANILLA("Vanilla", "f9a76537647989f9a0b6d001e320dac591c359e9e61a31f4ce11c88f207f0ad4"),
 
 	CAPE_15_YEAR_ANNIVERSARY("15 Year Anniversary", "cd9d82ab17fd92022dbd4a86cde4c382a7540e117fae7b9a2853658505a80625"),
+	CAPE_CHERRY_BLOSSOM("Cherry Blossom", "afd553b39358a24edfe3b8a9a939fa5fa4faa4d9a9c3d6af8eafb377fa05c2bb"),
+	CAPE_PURPLE_HEART("Purple Heart", "cb40a92e32b57fd732a00fc325e7afb00a7ca74936ad50d8e860152e482cfbde"),
+	CAPE_FOLLOWERS("Follower's", "569b7f2a1d00d26f30efe3f9ab9ac817b1e6d35f4f3cfb0324ef2d328223d350"),
+
+	// Christmas 2010
+	// New Year 2011
+	// Sniffer
+	// Snail
+	// ICU
+	// ICU2
+	// Frog
+	// Pancape
+	// Founder's
+	// Pride
+	// MCC 15th Year
+
+	// Microsoft Xbox
+	// 1st birthday
+
+	// Awesom
+	// Blonk
+	// No-Circle
+	// Nyan
+	// Squid
+	// Veterinarian
+
+	// Minecon 2011 alternatives
+
+	// BE skin packs
 	;
 
 	public static final String TEXTURE_URL = "https://textures.minecraft.net/texture/%s";
